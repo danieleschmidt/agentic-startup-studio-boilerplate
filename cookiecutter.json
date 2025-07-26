@@ -1,0 +1,18 @@
+{
+    "project_name": "My Agentic Startup",
+    "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_') }}",
+    "author_name": "Your Name",
+    "author_email": "your.email@example.com",
+    "description": "An AI-powered startup built with CrewAI, FastAPI, and React",
+    "version": "0.1.0",
+    "use_crewai": ["yes", "no"],
+    "use_fastapi": ["yes", "no"],
+    "use_react_shadcn": ["yes", "no"],
+    "include_terraform": ["yes", "no"],
+    "include_keycloak_auth": ["yes", "no"],
+    "python_version": "3.11",
+    "node_version": "18",
+    "license": ["MIT", "Apache-2.0", "GPL-3.0", "BSD-3-Clause"],
+    "github_username": "your-github-username",
+    "docker_registry": "docker.io"
+}

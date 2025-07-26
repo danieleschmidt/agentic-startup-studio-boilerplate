@@ -1,9 +1,8 @@
 # agentic-startup-studio-boilerplate
 
-<!-- IMPORTANT: Replace 'your-github-username-or-org' with your actual GitHub details -->
-[![Build Status](https://img.shields.io/github/actions/workflow/status/your-github-username-or-org/agentic-startup-studio-boilerplate/ci.yml?branch=main)](https://github.com/your-github-username-or-org/agentic-startup-studio-boilerplate/actions)
-[![Coverage Status](https://img.shields.io/coveralls/github/your-github-username-or-org/agentic-startup-studio-boilerplate)](https://coveralls.io/github/your-github-username-or-org/agentic-startup-studio-boilerplate)
-[![License](https://img.shields.io/github/license/your-github-username-or-org/agentic-startup-studio-boilerplate)](LICENSE)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/danieleschmidt/agentic-startup-studio-boilerplate/ci.yml?branch=main)](https://github.com/danieleschmidt/agentic-startup-studio-boilerplate/actions)
+[![Coverage Status](https://img.shields.io/coveralls/github/danieleschmidt/agentic-startup-studio-boilerplate)](https://coveralls.io/github/danieleschmidt/agentic-startup-studio-boilerplate)
+[![License](https://img.shields.io/github/license/danieleschmidt/agentic-startup-studio-boilerplate)](LICENSE)
 [![Version](https://img.shields.io/badge/version-v0.1.0-blue)](https://semver.org)
 
 A Cookiecutter template for rapidly building agentic startups. It provides a reusable skeleton that wires together CrewAI, FastAPI, and a React frontend with Shadcn UI components.
@@ -24,7 +23,7 @@ A Cookiecutter template for rapidly building agentic startups. It provides a reu
 ## ⚡ Quick Start
 
 1.  Install Cookiecutter: `pip install cookiecutter`
-2.  Generate a new project: `cookiecutter gh:your-github-username-or-org/agentic-startup-studio-boilerplate`
+2.  Generate a new project: `cookiecutter gh:danieleschmidt/agentic-startup-studio-boilerplate`
 3.  `cd my-new-app`
 4.  Start the development environment: `./dev up`
 
