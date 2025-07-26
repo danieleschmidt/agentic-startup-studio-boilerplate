@@ -1,0 +1,122 @@
+backlog:
+  - id: BL001
+    title: "Fix broken GitHub username placeholders in README badges"
+    type: bug
+    description: "README contains placeholder 'your-github-username-or-org' in badge URLs that renders broken links"
+    acceptance_criteria:
+      - "All badge URLs use actual repository path"
+      - "Badges display correctly on GitHub"
+      - "Build status badge links to actual workflow"
+    effort: 2
+    value: 5
+    time_criticality: 3
+    risk_reduction: 2
+    status: DONE
+    risk_tier: low
+    created_at: "2025-07-26T05:24:00Z"
+    completed_at: "2025-07-26T05:32:00Z"
+    wsjf_score: 5.0  # (5+3+2)/2
+    links: []
+
+  - id: BL002
+    title: "Add missing GitHub Actions CI workflow"
+    type: feature
+    description: "README references ci.yml workflow but none exists, creating broken build badge"
+    acceptance_criteria:
+      - "Create .github/workflows/ci.yml with basic linting and testing"
+      - "Include Python and Node.js support for template validation"
+      - "Badge displays actual build status"
+    effort: 5
+    value: 8
+    time_criticality: 5
+    risk_reduction: 3
+    status: DONE
+    risk_tier: low
+    created_at: "2025-07-26T05:24:00Z"
+    completed_at: "2025-07-26T05:35:00Z"
+    wsjf_score: 3.2  # (8+5+3)/5
+    links: []
+
+  - id: BL003
+    title: "Create cookiecutter.json template configuration"
+    type: feature
+    description: "Missing core cookiecutter.json file needed for template functionality"
+    acceptance_criteria:
+      - "cookiecutter.json with project variables defined"
+      - "Template variables for project_name, author, description, etc."
+      - "Default values provided for smooth UX"
+    effort: 3
+    value: 13
+    time_criticality: 8
+    risk_reduction: 5  
+    status: DONE
+    risk_tier: low
+    created_at: "2025-07-26T05:24:00Z"
+    completed_at: "2025-07-26T05:30:00Z"
+    wsjf_score: 8.67  # (13+8+5)/3
+    links: []
+
+  - id: BL004
+    title: "Add template directory structure"
+    type: feature
+    description: "Missing {{cookiecutter.project_slug}} template directory with actual project files"
+    acceptance_criteria:
+      - "Template directory with FastAPI backend structure"
+      - "React frontend with Shadcn UI setup"
+      - "CrewAI integration examples"
+      - "Docker compose files for development"
+      - "IaC terraform scripts"
+    effort: 13
+    value: 13
+    time_criticality: 8
+    risk_reduction: 8
+    status: READY
+    risk_tier: medium
+    created_at: "2025-07-26T05:24:00Z"
+    wsjf_score: 2.23  # (13+8+8)/13
+    links: []
+
+  - id: BL005
+    title: "Add CONTRIBUTING.md and CODE_OF_CONDUCT.md"
+    type: documentation
+    description: "README references these files but they don't exist"
+    acceptance_criteria:
+      - "CONTRIBUTING.md with clear contribution guidelines"
+      - "CODE_OF_CONDUCT.md with community standards"
+      - "Links from README work correctly"
+    effort: 3
+    value: 3
+    time_criticality: 2
+    risk_reduction: 1
+    status: READY
+    risk_tier: low
+    created_at: "2025-07-26T05:24:00Z"
+    wsjf_score: 2.0  # (3+2+1)/3
+    links: []
+
+  - id: BL006
+    title: "Create CHANGELOG.md"
+    type: documentation
+    description: "Referenced in README but missing, needed for version tracking"
+    acceptance_criteria:
+      - "CHANGELOG.md following Keep a Changelog format"
+      - "v0.1.0 entry with initial features"
+      - "Unreleased section for future changes"
+    effort: 2
+    value: 2
+    time_criticality: 1
+    risk_reduction: 1
+    status: READY
+    risk_tier: low
+    created_at: "2025-07-26T05:24:00Z"
+    wsjf_score: 2.0  # (2+1+1)/2
+    links: []
+
+meta:
+  last_updated: "2025-07-26T05:24:00Z"
+  total_items: 6
+  ready_items: 6
+  wsjf_weights:
+    aging_multiplier_max: 2.0
+    score_scale: [1, 2, 3, 5, 8, 13]
+  status_flow: ["NEW", "REFINED", "READY", "DOING", "PR", "DONE", "BLOCKED"]
