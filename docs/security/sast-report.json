@@ -1,0 +1,36 @@
+{
+  "scan_info": {
+    "timestamp": "2025-07-26T21:46:52.882939Z",
+    "files_scanned": 6,
+    "rules_executed": 4
+  },
+  "findings": [
+    {
+      "file": "security_scanner.py",
+      "line": 66,
+      "severity": "HIGH",
+      "message": "Use of eval() can lead to code injection",
+      "rule": "security-eval-usage"
+    },
+    {
+      "file": "security_scanner.py",
+      "line": 75,
+      "severity": "HIGH",
+      "message": "Use of exec() can lead to code injection",
+      "rule": "security-exec-usage"
+    },
+    {
+      "file": "security_scanner.py",
+      "line": 84,
+      "severity": "MEDIUM",
+      "message": "shell=True in subprocess can lead to command injection",
+      "rule": "security-shell-injection"
+    }
+  ],
+  "summary": {
+    "total_findings": 3,
+    "high_severity": 2,
+    "medium_severity": 1,
+    "low_severity": 0
+  }
+}
