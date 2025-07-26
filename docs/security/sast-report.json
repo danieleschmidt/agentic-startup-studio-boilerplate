@@ -1,7 +1,7 @@
 {
   "scan_info": {
-    "timestamp": "2025-07-26T21:46:52.882939Z",
-    "files_scanned": 6,
+    "timestamp": "2025-07-26T21:48:46.325573Z",
+    "files_scanned": 7,
     "rules_executed": 4
   },
   "findings": [
