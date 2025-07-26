@@ -1,0 +1,29 @@
+{
+  "scan_timestamp": "2025-07-26T21:48:46.318054Z",
+  "dependency_check": {
+    "status": "success",
+    "vulnerabilities_found": 0,
+    "report_path": "docs/security/dependency-check-report.json",
+    "scan_time": "2025-07-26T21:48:46.320693Z"
+  },
+  "sast_scan": {
+    "status": "success",
+    "findings_count": 3,
+    "high_severity_count": 2,
+    "report_path": "docs/security/sast-report.json",
+    "scan_time": "2025-07-26T21:48:46.325861Z"
+  },
+  "sbom_generation": {
+    "status": "success",
+    "components_count": 1,
+    "vulnerabilities_count": 0,
+    "sbom_path": "docs/security/sbom.json",
+    "generation_time": "2025-07-26T21:48:46.326119Z"
+  },
+  "security_summary": {
+    "status": "CRITICAL",
+    "total_vulnerabilities": 3,
+    "high_severity_issues": 2,
+    "recommendation": "Immediate action required. High severity vulnerabilities detected."
+  }
+}

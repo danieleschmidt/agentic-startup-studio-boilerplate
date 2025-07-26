@@ -1,0 +1,65 @@
+# Automation Scope Configuration
+# Defines boundaries for autonomous operations
+
+repository:
+  # Repository paths that automation can modify
+  allowed_paths:
+    - "."  # Current repository root
+    - "docs/"
+    - "src/"
+    - "tests/"
+    - "*.md"
+    - "*.yml"
+    - "*.yaml"
+    - "*.json"
+    - "*.py"
+    - "*.js"
+    - "*.ts"
+    - "*.tsx"
+    - ".gitattributes"
+    - ".gitignore"
+  
+  # Paths that require human approval
+  restricted_paths:
+    - ".github/workflows/"  # GitHub Actions require special permissions
+    - "terraform/"
+    - "iac/"
+    - "docker-compose.yml"
+    - "Dockerfile"
+    - "package.json"
+    - "requirements.txt"
+    - "pyproject.toml"
+
+external_operations:
+  # External services that automation can interact with
+  allowed_services:
+    - github_api: true  # For issue discovery, PR creation
+    - dependency_check: true  # For security scanning
+    - test_execution: true  # For running tests
+  
+  # Operations requiring explicit approval
+  restricted_operations:
+    - deploy_to_production: false
+    - modify_infrastructure: false
+    - access_secrets: false
+    - external_api_calls: false
+
+security:
+  # Risk thresholds for automated changes
+  max_risk_tier: "medium"  # Don't auto-execute high-risk items
+  max_effort_points: 8     # Don't auto-execute large changes
+  require_tests: true      # All changes must include tests
+  require_review: false    # Auto-merge allowed for low-risk items
+
+behavioral_limits:
+  max_prs_per_day: 5
+  max_consecutive_failures: 3
+  backoff_on_ci_failure_rate: 0.3  # 30%
+  aging_multiplier_max: 2.0
+
+compliance:
+  # Ensure changes follow established patterns
+  follow_existing_conventions: true
+  maintain_code_quality: true
+  preserve_security_practices: true
+  update_documentation: true

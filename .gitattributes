@@ -1,0 +1,20 @@
+# Automated merge strategies for different file types
+package-lock.json merge=theirs
+poetry.lock      merge=theirs
+yarn.lock        merge=theirs
+Pipfile.lock     merge=theirs
+*.snap           merge=theirs
+*.md             merge=union
+CHANGELOG.md     merge=union
+README.md        merge=union
+*.svg merge=binary
+*.png merge=binary
+*.jpg merge=binary
+*.jpeg merge=binary
+*.gif merge=binary
+*.zip merge=binary
+*.tar.gz merge=binary
+*.exe merge=binary
+*.dll merge=binary
+*.so merge=binary
+*.dylib merge=binary

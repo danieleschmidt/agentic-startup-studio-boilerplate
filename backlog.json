@@ -1,0 +1,129 @@
+{
+  "backlog": [
+    {
+      "id": "BL003",
+      "title": "Create cookiecutter.json template configuration",
+      "type": "feature",
+      "description": "Missing core cookiecutter.json file needed for template functionality",
+      "effort": 3,
+      "value": 13,
+      "time_criticality": 8,
+      "risk_reduction": 5,
+      "status": "DONE",
+      "risk_tier": "low",
+      "created_at": "2025-07-26T05:24:00Z",
+      "links": [],
+      "completed_at": "2025-07-26T05:30:00Z",
+      "wsjf_score": 8.67
+    },
+    {
+      "id": "BL001",
+      "title": "Fix broken GitHub username placeholders in README badges",
+      "type": "bug",
+      "description": "README contains placeholder 'your-github-username-or-org' in badge URLs that renders broken links",
+      "effort": 2,
+      "value": 5,
+      "time_criticality": 3,
+      "risk_reduction": 2,
+      "status": "DONE",
+      "risk_tier": "low",
+      "created_at": "2025-07-26T05:24:00Z",
+      "links": [],
+      "completed_at": "2025-07-26T05:32:00Z",
+      "wsjf_score": 5.0
+    },
+    {
+      "id": "BL002",
+      "title": "Add missing GitHub Actions CI workflow",
+      "type": "feature",
+      "description": "README references ci.yml workflow but none exists, creating broken build badge",
+      "effort": 5,
+      "value": 8,
+      "time_criticality": 5,
+      "risk_reduction": 3,
+      "status": "BLOCKED",
+      "risk_tier": "low",
+      "created_at": "2025-07-26T05:24:00Z",
+      "links": [],
+      "blocked_reason": "GitHub Actions workflows require special permissions not available to this assistant",
+      "wsjf_score": 3.2
+    },
+    {
+      "id": "BL004",
+      "title": "Add template directory structure",
+      "type": "feature",
+      "description": "Missing {{cookiecutter.project_slug}} template directory with actual project files",
+      "effort": 13,
+      "value": 13,
+      "time_criticality": 8,
+      "risk_reduction": 8,
+      "status": "BLOCKED",
+      "risk_tier": "medium",
+      "created_at": "2025-07-26T05:24:00Z",
+      "links": [],
+      "blocked_reason": "HIGH-RISK: Major architectural change requiring human approval per section 5 policy",
+      "wsjf_score": 2.23
+    },
+    {
+      "id": "BL005",
+      "title": "Add CONTRIBUTING.md and CODE_OF_CONDUCT.md",
+      "type": "documentation",
+      "description": "README references these files but they don't exist",
+      "effort": 3,
+      "value": 3,
+      "time_criticality": 2,
+      "risk_reduction": 1,
+      "status": "DONE",
+      "risk_tier": "low",
+      "created_at": "2025-07-26T05:24:00Z",
+      "links": [],
+      "completed_at": "2025-07-26T05:40:00Z",
+      "wsjf_score": 2.0
+    },
+    {
+      "id": "BL006",
+      "title": "Create CHANGELOG.md",
+      "type": "documentation",
+      "description": "Referenced in README but missing, needed for version tracking",
+      "effort": 2,
+      "value": 2,
+      "time_criticality": 1,
+      "risk_reduction": 1,
+      "status": "DONE",
+      "risk_tier": "low",
+      "created_at": "2025-07-26T05:24:00Z",
+      "links": [],
+      "completed_at": "2025-07-26T05:38:00Z",
+      "wsjf_score": 2.0
+    }
+  ],
+  "meta": {
+    "last_updated": "2025-07-26T21:48:46.326602Z",
+    "total_items": 6,
+    "done_items": 4,
+    "blocked_items": 2,
+    "ready_items": 0,
+    "completion_rate": 0.67,
+    "avg_cycle_time": "~8_minutes",
+    "wsjf_weights": {
+      "aging_multiplier_max": 2.0,
+      "score_scale": [
+        1,
+        2,
+        3,
+        5,
+        8,
+        13
+      ]
+    },
+    "status_flow": [
+      "NEW",
+      "REFINED",
+      "READY",
+      "DOING",
+      "PR",
+      "DONE",
+      "BLOCKED"
+    ]
+  }
+}
