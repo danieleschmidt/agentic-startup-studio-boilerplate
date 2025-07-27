@@ -1,0 +1,108 @@
+[flake8]
+# Configuration for flake8 Python linter
+
+# Maximum line length
+max-line-length = 88
+
+# List of error codes to ignore
+ignore = 
+    # E203: whitespace before ':' (conflicts with black)
+    E203,
+    # E501: line too long (handled by black)
+    E501,
+    # W503: line break before binary operator (conflicts with black)
+    W503,
+    # F401: imported but unused (handled by isort)
+    F401,
+    # E402: module level import not at top of file
+    E402
+
+# List of error codes to enforce
+select = 
+    E,    # pycodestyle errors
+    W,    # pycodestyle warnings
+    F,    # pyflakes
+    C,    # mccabe complexity
+    B,    # flake8-bugbear
+    I,    # flake8-import-order
+
+# Exclude patterns
+exclude = 
+    .git,
+    __pycache__,
+    .pytest_cache,
+    .coverage,
+    htmlcov,
+    build,
+    dist,
+    *.egg-info,
+    .venv,
+    venv,
+    .env,
+    node_modules,
+    migrations,
+    alembic/versions,
+    docs/_build,
+    .devcontainer
+
+# Maximum cyclomatic complexity
+max-complexity = 10
+
+# Import order configuration
+import-order-style = google
+application-import-names = app,tests
+
+# Docstring configuration
+docstring-convention = google
+
+# Per-file ignores
+per-file-ignores =
+    # Tests can use assert and have longer lines
+    tests/*:S101,E501
+    # Configuration files can have longer lines
+    */settings.py:E501
+    */config.py:E501
+    # Init files can have unused imports
+    __init__.py:F401
+    # Migration files are auto-generated
+    migrations/*:E501,F401
+    alembic/versions/*:E501,F401
+
+# Inline comment configuration
+inline-quotes = double
+multiline-quotes = double
+
+# Error message format
+format = %(path)s:%(row)d:%(col)d: %(code)s %(text)s
+
+# Show source code in error messages
+show-source = True
+
+# Show pep8 codes in error messages
+statistics = True
+
+# Count errors and warnings
+count = True
+
+# Enable additional checks from flake8-bugbear
+extend-ignore = 
+    # B008: Do not perform function calls in argument defaults
+    B008,
+    # B902: Invalid first argument name for method
+    B902
+
+# Additional configuration for specific plugins
+rst-roles = 
+    class,
+    func,
+    mod,
+    attr,
+    exc,
+    data,
+    const,
+    meth
+
+rst-directives =
+    deprecated,
+    versionadded,
+    versionchanged

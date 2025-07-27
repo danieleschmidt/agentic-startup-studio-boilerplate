@@ -1,0 +1,139 @@
+{
+  "name": "agentic-startup-studio-boilerplate",
+  "version": "0.2.0",
+  "description": "A Cookiecutter template for rapidly building agentic startups with CrewAI, FastAPI, and React",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:frontend\"",
+    "dev:api": "cd backend && uvicorn main:app --reload --host 0.0.0.0 --port 8000",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:up": "docker-compose -f docker-compose.dev.yml up -d",
+    "dev:down": "docker-compose -f docker-compose.dev.yml down",
+    "dev:logs": "docker-compose -f docker-compose.dev.yml logs -f",
+    "test": "npm run test:api && npm run test:frontend",
+    "test:api": "cd backend && python -m pytest",
+    "test:frontend": "cd frontend && npm test",
+    "test:e2e": "playwright test",
+    "test:coverage": "npm run test:api:coverage && npm run test:frontend:coverage",
+    "test:api:coverage": "cd backend && python -m pytest --cov=. --cov-report=html --cov-report=term",
+    "test:frontend:coverage": "cd frontend && npm run test:coverage",
+    "lint": "npm run lint:api && npm run lint:frontend",
+    "lint:api": "cd backend && flake8 . && black --check . && isort --check-only .",
+    "lint:frontend": "cd frontend && eslint . && prettier --check .",
+    "lint:fix": "npm run lint:api:fix && npm run lint:frontend:fix",
+    "lint:api:fix": "cd backend && black . && isort .",
+    "lint:frontend:fix": "cd frontend && eslint . --fix && prettier --write .",
+    "typecheck": "npm run typecheck:api && npm run typecheck:frontend",
+    "typecheck:api": "cd backend && mypy .",
+    "typecheck:frontend": "cd frontend && tsc --noEmit",
+    "build": "npm run build:api && npm run build:frontend",
+    "build:api": "cd backend && python -m build",
+    "build:frontend": "cd frontend && npm run build",
+    "build:docker": "docker build -t agentic-startup-studio:latest .",
+    "build:docker:dev": "docker-compose -f docker-compose.dev.yml build",
+    "security": "npm run security:api && npm run security:frontend",
+    "security:api": "cd backend && bandit -r . && safety check",
+    "security:frontend": "cd frontend && npm audit",
+    "security:docker": "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/app aquasec/trivy image agentic-startup-studio:latest",
+    "clean": "npm run clean:api && npm run clean:frontend",
+    "clean:api": "cd backend && rm -rf build/ dist/ *.egg-info/ .coverage htmlcov/ .pytest_cache/",
+    "clean:frontend": "cd frontend && rm -rf build/ dist/ .next/ coverage/",
+    "clean:docker": "docker system prune -f && docker volume prune -f",
+    "docs": "npm run docs:api && npm run docs:frontend",
+    "docs:api": "cd backend && pdoc --html --output-dir docs/ .",
+    "docs:frontend": "cd frontend && typedoc --out docs/ src/",
+    "docs:serve": "cd docs && python -m http.server 8080",
+    "prepare": "husky install",
+    "pre-commit": "npm run lint && npm run typecheck && npm run test",
+    "validate": "npm run validate:cookiecutter && npm run validate:config",
+    "validate:cookiecutter": "cookiecutter-validator .",
+    "validate:config": "node scripts/validate-config.js",
+    "setup": "npm run setup:dev && npm run setup:hooks",
+    "setup:dev": "npm install && npm run setup:backend && npm run setup:frontend",
+    "setup:backend": "cd backend && pip install -r requirements.txt && pip install -r requirements-dev.txt",
+    "setup:frontend": "cd frontend && npm install",
+    "setup:hooks": "husky install && pre-commit install",
+    "release": "semantic-release",
+    "release:dry": "semantic-release --dry-run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danieleschmidt/agentic-startup-studio-boilerplate.git"
+  },
+  "keywords": [
+    "agentic",
+    "startup",
+    "template",
+    "cookiecutter",
+    "crewai",
+    "fastapi",
+    "react",
+    "automation",
+    "ai",
+    "boilerplate",
+    "sdlc",
+    "devops"
+  ],
+  "author": "Daniel Schmidt",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/danieleschmidt/agentic-startup-studio-boilerplate/issues"
+  },
+  "homepage": "https://github.com/danieleschmidt/agentic-startup-studio-boilerplate#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^17.8.1",
+    "@commitlint/config-conventional": "^17.8.1",
+    "@playwright/test": "^1.40.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^9.2.6",
+    "concurrently": "^8.2.2",
+    "cookiecutter-validator": "^1.0.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "semantic-release": "^22.0.12"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "lint-staged": {
+    "backend/**/*.py": [
+      "black",
+      "isort",
+      "flake8"
+    ],
+    "frontend/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{md,json,yaml,yml}": [
+      "prettier --write"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/git",
+      "@semantic-release/github"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
