@@ -205,3 +205,89 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm
+.yarn-integrity
+
+# Frontend build
+build/
+dist/
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
+coverage/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# IDE files
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.temp/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Security
+*.pem
+*.key
+*.crt
+secrets.yaml
+secrets.json
+.secrets.baseline
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+
+# Local configuration
+.env.local
+.env.development
+.env.test
+.env.production
+local.env
+
+# Upload directories
+uploads/
+files/
+media/
+
+# Application specific
+hygiene_results_*.json
+status_*.json
+execution_*.json
+
+# Development tools
+.devcontainer/.env
+cookiecutter-*/
+
+# CI/CD
+.github/workflows/generated/
+
+# Monitoring
+grafana/
+prometheus/

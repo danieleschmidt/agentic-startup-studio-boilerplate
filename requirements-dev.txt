@@ -1,0 +1,130 @@
+# Development dependencies for the Agentic Startup Studio Boilerplate
+
+# Code Quality & Linting
+black==23.12.1
+flake8==7.0.0
+flake8-docstrings==1.7.0
+flake8-import-order==0.18.2
+flake8-bugbear==23.12.15
+isort==5.13.2
+mypy==1.8.0
+pylint==3.0.3
+
+# Testing Framework
+pytest==7.4.4
+pytest-asyncio==0.23.2
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+pytest-xdist==3.5.0
+pytest-benchmark==4.0.0
+pytest-timeout==2.2.0
+pytest-env==1.1.3
+pytest-clarity==1.0.1
+
+# Security Testing
+bandit==1.7.5
+safety==2.3.5
+semgrep==1.45.0
+
+# API Testing
+httpx==0.26.0
+respx==0.20.2
+
+# Database Testing
+pytest-postgresql==5.0.0
+alembic==1.13.1
+
+# Performance Testing
+locust==2.20.0
+
+# Documentation
+pdoc==14.3.0
+sphinx==7.2.6
+sphinx-rtd-theme==2.0.0
+sphinx-autodoc-typehints==1.25.2
+
+# Development Tools
+pre-commit==3.6.0
+commitizen==3.13.0
+invoke==2.2.0
+python-dotenv==1.0.0
+watchdog==3.0.0
+
+# Debugging & Profiling
+ipdb==0.13.13
+line-profiler==4.1.1
+memory-profiler==0.61.0
+py-spy==0.3.14
+
+# Type Checking
+types-requests==2.31.0.20240106
+types-redis==4.6.0.20240106
+types-PyYAML==6.0.12.12
+
+# Data Validation
+pydantic[email]==2.5.3
+
+# Development Server
+uvicorn[standard]==0.25.0
+
+# Build Tools
+build==1.0.3
+twine==4.0.2
+wheel==0.42.0
+
+# Version Management
+bump2version==1.0.1
+
+# Code Complexity Analysis
+radon==6.0.1
+xenon==0.9.1
+
+# Import Sorting & Management
+reorder-python-imports==3.12.0
+
+# Dead Code Detection
+vulture==2.10
+
+# Dependency Management
+pip-tools==7.3.0
+pipdeptree==2.13.1
+
+# Configuration Management
+dynaconf==3.2.4
+
+# Development Utilities
+rich==13.7.0
+typer==0.9.0
+click==8.1.7
+
+# JSON Schema Validation
+jsonschema==4.20.0
+
+# Fake Data Generation
+faker==21.0.0
+factory-boy==3.3.0
+
+# Time & Date Utilities
+freezegun==1.4.0
+
+# File System Utilities
+pathlib2==2.3.7
+
+# Network Testing
+responses==0.24.1
+
+# Environment Management
+python-decouple==3.8
+
+# Logging Enhancements
+structlog==23.2.0
+colorlog==6.8.0
+
+# Task Queue Testing
+celery==5.3.6
+
+# Redis Testing
+fakeredis==2.20.1
+
+# HTTP Mocking
+vcr-py==6.0.1
