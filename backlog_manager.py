@@ -137,6 +137,25 @@ class BacklogManager:
         self._update_metadata(data)
         self.save_backlog(data)
     
+    def calculate_actual_cycle_time(self, data: Dict[str, Any]) -> float:
+        """Calculate actual average cycle time from completed items"""
+        completed_items = [item for item in data.get('backlog', []) 
+                          if item.get('status') == 'DONE' and 
+                             item.get('created_at') and 
+                             item.get('completed_at')]
+        
+        if not completed_items:
+            return 0
+        
+        total_minutes = 0
+        for item in completed_items:
+            created = datetime.datetime.fromisoformat(item['created_at'].replace('Z', '+00:00'))
+            completed = datetime.datetime.fromisoformat(item['completed_at'].replace('Z', '+00:00'))
+            cycle_time_minutes = (completed - created).total_seconds() / 60
+            total_minutes += cycle_time_minutes
+        
+        return round(total_minutes / len(completed_items), 1)
+
     def _update_metadata(self, data: Dict[str, Any]):
         """Update backlog metadata"""
         items = data.get('backlog', [])
@@ -145,6 +164,10 @@ class BacklogManager:
         blocked_items = len([i for i in items if i.get('status') == 'BLOCKED'])
         ready_items = len([i for i in items if i.get('status') == 'READY'])
         
+        # Calculate actual cycle time
+        actual_cycle_time = self.calculate_actual_cycle_time(data)
+        cycle_time_display = f"{actual_cycle_time}_minutes" if actual_cycle_time > 0 else "no_completed_items"
+        
         data['meta'] = {
             'last_updated': datetime.datetime.utcnow().isoformat() + "Z",
             'total_items': total_items,
@@ -152,7 +175,7 @@ class BacklogManager:
             'blocked_items': blocked_items,
             'ready_items': ready_items,
             'completion_rate': round(done_items / total_items, 2) if total_items > 0 else 0,
-            'avg_cycle_time': "~8_minutes",  # TODO: Calculate from actual data
+            'avg_cycle_time': cycle_time_display,
             'wsjf_weights': {
                 'aging_multiplier_max': 2.0,
                 'score_scale': [1, 2, 3, 5, 8, 13]
