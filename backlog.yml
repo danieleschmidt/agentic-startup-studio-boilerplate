@@ -115,14 +115,33 @@ backlog:
     wsjf_score: 2.0  # (2+1+1)/2
     links: []
 
+  - id: BL007
+    title: "Calculate actual cycle time from backlog data"
+    type: improvement
+    description: "Replace hardcoded avg_cycle_time with calculation from actual completion timestamps"
+    acceptance_criteria:
+      - "Add calculate_actual_cycle_time method to BacklogManager"
+      - "Update _update_metadata to use calculated cycle time"
+      - "Include comprehensive tests for edge cases"
+    effort: 2
+    value: 5
+    time_criticality: 3
+    risk_reduction: 2
+    status: DONE
+    risk_tier: low
+    created_at: "2025-07-27T12:00:00Z"
+    completed_at: "2025-07-27T12:15:00Z"
+    wsjf_score: 5.0  # (5+3+2)/2
+    links: []
+
 meta:
-  last_updated: "2025-07-26T05:42:00Z"
-  total_items: 6
-  done_items: 4
+  last_updated: "2025-07-27T12:15:00Z"
+  total_items: 7
+  done_items: 5
   blocked_items: 2
   ready_items: 0
-  completion_rate: 0.67
-  avg_cycle_time: "~8_minutes"
+  completion_rate: 0.71
+  avg_cycle_time: "11.4_minutes"
   wsjf_weights:
     aging_multiplier_max: 2.0
     score_scale: [1, 2, 3, 5, 8, 13]

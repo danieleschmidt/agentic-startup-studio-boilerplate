@@ -1,0 +1,34 @@
+{
+  "timestamp": "2025-07-27T07:12:13.492466Z",
+  "completed_ids": [
+    "BL001",
+    "BL003",
+    "BL005",
+    "BL006",
+    "BL007"
+  ],
+  "coverage_delta": "N/A",
+  "flaky_tests": [],
+  "ci_summary": "No CI configured",
+  "open_prs": 0,
+  "risks_or_blocks": [
+    "GitHub Actions workflows require special permissions not available to this assistant",
+    "HIGH-RISK: Major architectural change requiring human approval per section 5 policy"
+  ],
+  "backlog_size_by_status": {
+    "DONE": 5,
+    "BLOCKED": 2
+  },
+  "avg_cycle_time": "unknown",
+  "dora": {
+    "deploy_freq": "0_per_day",
+    "lead_time": "unknown",
+    "change_fail_rate": "0%",
+    "mttr": "unknown"
+  },
+  "rerere_auto_resolved_total": 0,
+  "merge_driver_hits_total": 0,
+  "ci_failure_rate": "0%",
+  "pr_backoff_state": "inactive",
+  "wsjf_snapshot": []
+}
