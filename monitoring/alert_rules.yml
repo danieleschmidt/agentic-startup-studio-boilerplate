@@ -1,0 +1,264 @@
+# Prometheus alerting rules for Agentic Startup Studio
+
+groups:
+  - name: agentic_startup_critical
+    interval: 30s
+    rules:
+      # Service availability
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute"
+          runbook_url: "https://runbooks.company.com/service-down"
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: http_error_rate > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          category: reliability
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.job }}"
+          runbook_url: "https://runbooks.company.com/high-error-rate"
+
+      # Database connection issues
+      - alert: DatabaseConnectionPoolExhausted
+        expr: db_connections_utilization > 90
+        for: 2m
+        labels:
+          severity: critical
+          category: database
+        annotations:
+          summary: "Database connection pool nearly exhausted"
+          description: "Database connection pool utilization is {{ $value }}%"
+
+      # Memory usage critical
+      - alert: HighMemoryUsage
+        expr: memory_utilization_percent > 90
+        for: 5m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value }}% on {{ $labels.instance }}"
+
+      # Disk space critical
+      - alert: DiskSpaceCritical
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 10
+        for: 2m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Disk space critically low"
+          description: "Disk space is {{ $value }}% full on {{ $labels.instance }}"
+
+  - name: agentic_startup_warning
+    interval: 60s
+    rules:
+      # High response time
+      - alert: HighResponseTime
+        expr: http_request_duration_p95 > 1.0
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s"
+
+      # CPU usage warning
+      - alert: HighCPUUsage
+        expr: cpu_utilization_percent > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }}"
+
+      # Memory usage warning
+      - alert: HighMemoryUsageWarning
+        expr: memory_utilization_percent > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "High memory usage warning"
+          description: "Memory usage is {{ $value }}% on {{ $labels.instance }}"
+
+      # Database slow queries
+      - alert: DatabaseSlowQueries
+        expr: rate(postgres_slow_queries_total[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Database slow queries detected"
+          description: "{{ $value }} slow queries per second detected"
+
+      # Redis memory usage
+      - alert: RedisHighMemoryUsage
+        expr: (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: cache
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory usage is {{ $value }}%"
+
+  - name: agentic_startup_ai_ml
+    interval: 60s
+    rules:
+      # Model inference failures
+      - alert: ModelInferenceFailures
+        expr: rate(model_requests_total{status="error"}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          category: ai_ml
+        annotations:
+          summary: "High model inference failure rate"
+          description: "Model inference failure rate is {{ $value | humanizePercentage }}"
+
+      # Model response time
+      - alert: ModelSlowResponse
+        expr: model_inference_time_p95 > 5.0
+        for: 10m
+        labels:
+          severity: warning
+          category: ai_ml
+        annotations:
+          summary: "Model inference time too slow"
+          description: "95th percentile model inference time is {{ $value }}s"
+
+      # Agent task failures
+      - alert: AgentTaskFailures
+        expr: rate(agent_tasks_failed_total[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          category: agents
+        annotations:
+          summary: "High agent task failure rate"
+          description: "Agent task failure rate is {{ $value | humanizePercentage }}"
+
+      # CrewAI workflow issues
+      - alert: CrewAIWorkflowStuck
+        expr: increase(crew_workflow_started_total[1h]) - increase(crew_workflow_completed_total[1h]) > 10
+        for: 30m
+        labels:
+          severity: warning
+          category: workflow
+        annotations:
+          summary: "CrewAI workflows appear stuck"
+          description: "{{ $value }} workflows have not completed in the last hour"
+
+  - name: agentic_startup_business
+    interval: 300s
+    rules:
+      # Request volume drop
+      - alert: RequestVolumeDrop
+        expr: (rate(http_requests_total[1h]) < rate(http_requests_total[1h] offset 24h) * 0.5) and (rate(http_requests_total[1h]) > 0)
+        for: 30m
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Significant drop in request volume"
+          description: "Request volume has dropped by more than 50% compared to the same time yesterday"
+
+      # New user registrations drop
+      - alert: LowUserRegistrations
+        expr: increase(user_registrations_total[1h]) < 1
+        for: 4h
+        labels:
+          severity: info
+          category: business
+        annotations:
+          summary: "Low user registration rate"
+          description: "Only {{ $value }} user registrations in the last hour"
+
+  - name: agentic_startup_security
+    interval: 120s
+    rules:
+      # Failed login attempts
+      - alert: HighFailedLogins
+        expr: rate(auth_failed_attempts_total[5m]) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High rate of failed login attempts"
+          description: "{{ $value }} failed login attempts per second"
+
+      # Suspicious API access
+      - alert: SuspiciousAPIAccess
+        expr: rate(http_requests_total{status="403"}[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "Suspicious API access patterns"
+          description: "{{ $value }} forbidden requests per second"
+
+  - name: agentic_startup_infrastructure
+    interval: 180s
+    rules:
+      # Container restarts
+      - alert: ContainerRestarts
+        expr: increase(container_start_time_seconds[1h]) > 3
+        for: 10m
+        labels:
+          severity: warning
+          category: infrastructure
+        annotations:
+          summary: "Container restarting frequently"
+          description: "Container {{ $labels.name }} has restarted {{ $value }} times in the last hour"
+
+      # Network connectivity issues
+      - alert: NetworkConnectivityIssues
+        expr: probe_success == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: network
+        annotations:
+          summary: "Network connectivity issue"
+          description: "Probe to {{ $labels.instance }} is failing"
+
+      # SSL certificate expiration
+      - alert: SSLCertificateExpiringSoon
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 7
+        for: 1h
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}"
+
+      # Load balancer health
+      - alert: LoadBalancerUnhealthy
+        expr: nginx_up == 0
+        for: 2m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Load balancer is down"
+          description: "Nginx load balancer is not responding"

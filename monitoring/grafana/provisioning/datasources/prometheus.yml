@@ -1,0 +1,43 @@
+# Grafana datasource configuration for Prometheus
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      httpMethod: POST
+      manageAlerts: true
+      prometheusType: Prometheus
+      prometheusVersion: 2.48.0
+      cacheLevel: 'High'
+      disableRecordingRules: false
+      incrementalQueryOverlapWindow: 10m
+      queryTimeout: 60s
+    secureJsonData: {}
+    uid: prometheus_uid
+    orgId: 1
+    version: 1
+
+  - name: Prometheus-Alertmanager
+    type: alertmanager
+    access: proxy
+    url: http://alertmanager:9093
+    jsonData:
+      implementation: prometheus
+    uid: alertmanager_uid
+    orgId: 1
+    version: 1
+
+  # Optional: Add other datasources if needed
+  # - name: Loki
+  #   type: loki
+  #   access: proxy
+  #   url: http://loki:3100
+  #   uid: loki_uid
+  #   orgId: 1
+  #   version: 1
