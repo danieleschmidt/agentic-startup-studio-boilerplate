@@ -1,0 +1,116 @@
+# Coverage.py configuration for Agentic Startup Studio Boilerplate
+
+[run]
+# Files to include in coverage
+source = .
+
+# Files and directories to exclude
+omit = 
+    */tests/*
+    */test_*
+    */*_test.py
+    */conftest.py
+    */venv/*
+    */.venv/*
+    */env/*
+    */node_modules/*
+    */frontend/*
+    */build/*
+    */dist/*
+    */__pycache__/*
+    */migrations/*
+    */alembic/*
+    */.git/*
+    */.pytest_cache/*
+    */.mypy_cache/*
+    */.tox/*
+    */htmlcov/*
+    */coverage/*
+    setup.py
+    manage.py
+    wsgi.py
+    asgi.py
+
+# Branch coverage
+branch = true
+
+# Concurrency support
+concurrency = multiprocessing
+
+# Data file location
+data_file = .coverage
+
+# Parallel mode for multiprocessing
+parallel = true
+
+[report]
+# Reporting options
+precision = 2
+show_missing = true
+skip_covered = false
+skip_empty = true
+sort = Cover
+
+# Fail if coverage is below threshold
+fail_under = 80
+
+# Exclude lines from coverage
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+    
+    # Don't complain about missing debug-only code:
+    def __repr__
+    if self\.debug
+    
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise NotImplementedError
+    
+    # Don't complain if non-runnable code isn't run:
+    if 0:
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    
+    # Don't complain about abstract methods
+    @(abc\.)?abstractmethod
+    
+    # Don't complain about platform specific code
+    if sys.platform
+    
+    # Don't complain about deprecated code
+    @deprecated
+    warnings.warn
+    
+    # Don't complain about logging statements
+    logger\.debug
+    logger\.info
+    
+    # Don't complain about pass statements
+    pass
+    
+    # Don't complain about ellipsis
+    \.\.\.
+
+[html]
+# HTML report configuration
+directory = htmlcov
+title = Agentic Startup Studio Coverage Report
+show_contexts = true
+
+[xml]
+# XML report configuration
+output = coverage.xml
+
+[json]
+# JSON report configuration
+output = coverage.json
+pretty_print = true
+show_contexts = true
+
+[paths]
+# Path mappings for coverage combining
+source = 
+    .
+    */site-packages/
+    */lib/python*/site-packages/
