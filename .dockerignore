@@ -1,0 +1,192 @@
+# Git and version control
+.git
+.gitignore
+.gitattributes
+.github/
+
+# Documentation
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+LICENSE
+docs/
+*.md
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Development tools
+.devcontainer/
+.env*
+!.env.example
+.editorconfig
+.pre-commit-config.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+
+# Build outputs
+build/
+dist/
+*.egg-info/
+.eggs/
+*.wheel
+
+# Test artifacts
+test-results/
+playwright-report/
+coverage/
+.nyc_output/
+junit.xml
+
+# Logs
+logs/
+*.log
+*.out
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Security and secrets
+*.pem
+*.key
+*.cert
+*.crt
+secrets/
+.secrets
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Archives
+*.tar
+*.tar.gz
+*.zip
+*.rar
+*.7z
+
+# Large files and media
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+*.mkv
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.svg
+*.ico
+*.webp
+
+# Project specific
+cookiecutter.json
+hooks/
+tests/
+.pytest_cache/
+.mypy_cache/
+bandit-report.json
+safety-report.json
+semgrep-report.json
+
+# Monitoring and metrics
+prometheus.yml
+grafana/
+
+# Infrastructure as Code
+terraform/
+*.tf
+*.tfvars
+*.tfstate*
+.terraform/
+
+# CI/CD
+.github/workflows/
+.gitlab-ci.yml
+azure-pipelines.yml
+Jenkinsfile
+.circleci/
+
+# Package managers lock files (include in build)
+# Uncomment if you want to exclude lock files
+# package-lock.json
+# yarn.lock
+# Pipfile.lock
+# poetry.lock
+
+# Local development overrides
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Editor directories and files
+.vscode/
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
