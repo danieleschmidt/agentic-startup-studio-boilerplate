@@ -1,0 +1,182 @@
+# Prometheus configuration for Agentic Startup Studio Boilerplate
+# Scrapes metrics from all application components
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+  
+  external_labels:
+    cluster: 'agentic-startup'
+    environment: 'production'
+
+rule_files:
+  - "alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Main application metrics
+  - job_name: 'agentic-app'
+    static_configs:
+      - targets: ['app:8000']
+    metrics_path: /metrics
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    
+  # Database metrics
+  - job_name: 'postgres-exporter'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+    
+  # Redis metrics
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 30s
+    
+  # Nginx metrics
+  - job_name: 'nginx-exporter'
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+    scrape_interval: 30s
+    
+  # Node exporter for system metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+
+  # cAdvisor for container metrics
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # Celery worker metrics
+  - job_name: 'celery-exporter'
+    static_configs:
+      - targets: ['celery-exporter:9540']
+    scrape_interval: 30s
+
+  # Custom application metrics
+  - job_name: 'app-custom-metrics'
+    static_configs:
+      - targets: ['app:8000']
+    metrics_path: /api/v1/metrics
+    scrape_interval: 30s
+    
+  # Health check metrics
+  - job_name: 'blackbox-exporter'
+    static_configs:
+      - targets: ['blackbox-exporter:9115']
+    scrape_interval: 60s
+
+  # Blackbox probes for external monitoring
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - http://app:8000/health
+        - http://nginx:80/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # AI/ML model metrics
+  - job_name: 'model-metrics'
+    static_configs:
+      - targets: ['app:8000']
+    metrics_path: /api/v1/model-metrics
+    scrape_interval: 60s
+    scrape_timeout: 30s
+
+  # CrewAI agent metrics
+  - job_name: 'crewai-metrics'
+    static_configs:
+      - targets: ['app:8000']
+    metrics_path: /api/v1/agents/metrics
+    scrape_interval: 30s
+
+# Recording rules for pre-aggregated metrics
+recording_rules:
+  - name: agentic_startup_recording_rules
+    interval: 30s
+    rules:
+      # Request rate
+      - record: http_requests_per_second
+        expr: rate(http_requests_total[5m])
+        
+      # Error rate
+      - record: http_error_rate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m])
+        
+      # Response time percentiles
+      - record: http_request_duration_p50
+        expr: histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[5m]))
+        
+      - record: http_request_duration_p95
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+        
+      - record: http_request_duration_p99
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))
+
+      # Database connection pool
+      - record: db_connections_utilization
+        expr: (db_connections_active / db_connections_max) * 100
+        
+      # Memory usage
+      - record: memory_utilization_percent
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
+        
+      # CPU usage
+      - record: cpu_utilization_percent
+        expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
+
+      # AI model performance
+      - record: model_inference_time_p95
+        expr: histogram_quantile(0.95, rate(model_inference_duration_seconds_bucket[5m]))
+        
+      - record: model_success_rate
+        expr: rate(model_requests_total{status="success"}[5m]) / rate(model_requests_total[5m])
+
+      # Agent task metrics
+      - record: agent_task_completion_rate
+        expr: rate(agent_tasks_completed_total[5m]) / rate(agent_tasks_started_total[5m])
+        
+      - record: agent_task_duration_p95
+        expr: histogram_quantile(0.95, rate(agent_task_duration_seconds_bucket[5m]))
+
+# Storage configuration
+storage:
+  tsdb:
+    path: /prometheus
+    retention.time: 15d
+    retention.size: 10GB
+    wal-compression: true
+    
+# Remote write configuration (optional)
+# remote_write:
+#   - url: "https://prometheus-remote-write-endpoint"
+#     basic_auth:
+#       username: "user"
+#       password: "password"
