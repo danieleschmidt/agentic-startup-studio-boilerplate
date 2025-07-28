@@ -1,0 +1,205 @@
+# CODEOWNERS file for Agentic Startup Studio Boilerplate
+# This file defines code ownership and review requirements for the repository
+# Documentation: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global ownership - fallback for all files
+* @danieleschmidt
+
+# Core Application Code
+/src/ @danieleschmidt
+/app/ @danieleschmidt
+
+# API and Backend
+/api/ @danieleschmidt
+/backend/ @danieleschmidt
+*.py @danieleschmidt
+
+# Frontend and UI
+/frontend/ @danieleschmidt
+/ui/ @danieleschmidt
+/components/ @danieleschmidt
+*.tsx @danieleschmidt
+*.jsx @danieleschmidt
+*.ts @danieleschmidt
+*.js @danieleschmidt
+
+# Configuration Files
+*.json @danieleschmidt
+*.yaml @danieleschmidt
+*.yml @danieleschmidt
+*.toml @danieleschmidt
+.env* @danieleschmidt
+
+# Docker and Containerization
+Dockerfile* @danieleschmidt
+docker-compose*.yml @danieleschmidt
+.dockerignore @danieleschmidt
+
+# CI/CD and Automation
+/.github/ @danieleschmidt
+/scripts/ @danieleschmidt
+*.sh @danieleschmidt
+
+# Documentation
+/docs/ @danieleschmidt
+*.md @danieleschmidt
+*.rst @danieleschmidt
+
+# Testing
+/tests/ @danieleschmidt
+test_*.py @danieleschmidt
+*_test.py @danieleschmidt
+*.test.js @danieleschmidt
+*.test.ts @danieleschmidt
+*.test.tsx @danieleschmidt
+*.spec.js @danieleschmidt
+*.spec.ts @danieleschmidt
+*.spec.tsx @danieleschmidt
+
+# Security and Compliance
+SECURITY.md @danieleschmidt
+/security/ @danieleschmidt
+.bandit @danieleschmidt
+.safety-policy.json @danieleschmidt
+
+# Monitoring and Observability
+/monitoring/ @danieleschmidt
+prometheus.yml @danieleschmidt
+grafana/ @danieleschmidt
+alert_rules.yml @danieleschmidt
+
+# Database and Migrations
+/migrations/ @danieleschmidt
+/db/ @danieleschmidt
+*.sql @danieleschmidt
+
+# Infrastructure as Code
+/terraform/ @danieleschmidt
+/ansible/ @danieleschmidt
+/k8s/ @danieleschmidt
+/kubernetes/ @danieleschmidt
+*.tf @danieleschmidt
+
+# Package Management
+package.json @danieleschmidt
+package-lock.json @danieleschmidt
+requirements.txt @danieleschmidt
+requirements-*.txt @danieleschmidt
+Pipfile @danieleschmidt
+Pipfile.lock @danieleschmidt
+poetry.lock @danieleschmidt
+pyproject.toml @danieleschmidt
+yarn.lock @danieleschmidt
+
+# Build and Release
+Makefile @danieleschmidt
+/build/ @danieleschmidt
+/dist/ @danieleschmidt
+.releaserc.json @danieleschmidt
+
+# Environment and Editor Configuration
+.editorconfig @danieleschmidt
+.gitignore @danieleschmidt
+.gitattributes @danieleschmidt
+.pre-commit-config.yaml @danieleschmidt
+
+# Legal and Licensing
+LICENSE @danieleschmidt
+NOTICE @danieleschmidt
+COPYRIGHT @danieleschmidt
+
+# Project Management
+PROJECT_CHARTER.md @danieleschmidt
+ROADMAP.md @danieleschmidt
+CHANGELOG.md @danieleschmidt
+CONTRIBUTING.md @danieleschmidt
+
+# Architecture Decision Records
+/docs/adr/ @danieleschmidt
+
+# Quality Assurance
+pytest.ini @danieleschmidt
+.coveragerc @danieleschmidt
+tox.ini @danieleschmidt
+setup.cfg @danieleschmidt
+
+# IDE Configuration
+/.vscode/ @danieleschmidt
+/.idea/ @danieleschmidt
+/.devcontainer/ @danieleschmidt
+
+# Special Files requiring extra review
+# These files require approval from multiple reviewers due to their critical nature
+
+# Repository root configuration files (require careful review)
+/.github/CODEOWNERS @danieleschmidt
+/.github/dependabot.yml @danieleschmidt
+/.github/security.yml @danieleschmidt
+
+# Automation scripts (require security review)
+/scripts/automation/ @danieleschmidt
+
+# Monitoring configurations (require operational review)
+/monitoring/prometheus.yml @danieleschmidt
+/monitoring/alert_rules.yml @danieleschmidt
+
+# Security configurations (require security review)
+SECURITY.md @danieleschmidt
+/.github/security.yml @danieleschmidt
+
+# Performance-critical files
+/performance/ @danieleschmidt
+
+# Data processing and ML models
+/models/ @danieleschmidt
+/data/ @danieleschmidt
+*.pkl @danieleschmidt
+*.joblib @danieleschmidt
+
+# AI and CrewAI specific files
+/agents/ @danieleschmidt
+/crews/ @danieleschmidt
+/tools/ @danieleschmidt
+crew_*.py @danieleschmidt
+agent_*.py @danieleschmidt
+
+# External integrations
+/integrations/ @danieleschmidt
+/webhooks/ @danieleschmidt
+
+# Compliance and audit files
+/compliance/ @danieleschmidt
+/audit/ @danieleschmidt
+
+# Backup and recovery
+/backup/ @danieleschmidt
+/recovery/ @danieleschmidt
+
+# Logs and temporary files (usually shouldn't be committed, but if they are...)
+*.log @danieleschmidt
+/logs/ @danieleschmidt
+/tmp/ @danieleschmidt
+
+# Configuration templates
+*.template @danieleschmidt
+*.example @danieleschmidt
+
+# Health check and diagnostic files
+/health/ @danieleschmidt
+/diagnostics/ @danieleschmidt
+
+# Custom business logic
+/business/ @danieleschmidt
+/logic/ @danieleschmidt
+/workflows/ @danieleschmidt
+
+# Third-party configurations
+/vendor/ @danieleschmidt
+/third-party/ @danieleschmidt
+
+# NOTE: CODEOWNERS rules are evaluated in order, with later rules taking precedence.
+# The most specific rules should be placed at the bottom of the file.
+
+# Final catch-all for any files not explicitly covered
+# This ensures all changes have at least one reviewer
+# @danieleschmidt
