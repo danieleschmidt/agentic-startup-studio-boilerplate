@@ -1,0 +1,232 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Renovate configuration for advanced dependency management",
+  "extends": [
+    "config:base",
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticPrefixFixDepsChoreOthers",
+    ":ignoreModulesAndTests",
+    "group:monorepos",
+    "group:recommended",
+    "workarounds:all"
+  ],
+  "timezone": "America/New_York",
+  "schedule": ["before 6am on monday"],
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 2,
+  "updateNotScheduled": false,
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "🤖 Dependency Updates Dashboard",
+  "dependencyDashboardHeader": "This dashboard provides an overview of all dependency updates. Click on a checkbox to create or update the corresponding PR.",
+  "dependencyDashboardFooter": "Managed by [Renovate](https://renovatebot.com) | [Configuration](renovate.json)",
+  "commitMessagePrefix": "⬆️",
+  "commitMessageAction": "update",
+  "commitMessageTopic": "{{depName}}",
+  "commitMessageExtra": "to {{newVersion}}",
+  "branchPrefix": "renovate/",
+  "branchTopic": "{{{depNameSanitized}}}-{{{newMajor}}}{{#if isPatch}}.{{newMinor}}{{/if}}.x{{#if isLockfileUpdate}}-lockfile{{/if}}",
+  "prTitle": "⬆️ {{commitMessagePrefix}} {{commitMessageAction}} {{commitMessageTopic}} {{commitMessageExtra}}",
+  "assignees": ["@danieleschmidt"],
+  "reviewers": ["@danieleschmidt"],
+  "labels": ["dependencies", "renovate"],
+  "rebaseWhen": "conflicted",
+  "rollbackPrs": true,
+  "separateMajorMinor": true,
+  "separateMultipleMajor": true,
+  "separateMinorPatch": false,
+  "rangeStrategy": "bump",
+  "bumpVersion": "patch",
+  "semanticCommits": "enabled",
+  "semanticCommitType": "deps",
+  "semanticCommitScope": null,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "recreateClosed": true,
+    "rebaseStalePrs": true,
+    "schedule": ["before 6am on the first day of the month"],
+    "commitMessageAction": "lock file maintenance",
+    "branchTopic": "lock-file-maintenance",
+    "prTitle": "🔒 Lock file maintenance"
+  },
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "schedule": ["at any time"],
+    "labels": ["security", "vulnerability"],
+    "prPriority": 10,
+    "assignees": ["@danieleschmidt"],
+    "reviewers": ["@danieleschmidt"]
+  },
+  "packageRules": [
+    {
+      "description": "Security updates - highest priority",
+      "matchDepTypes": ["*"],
+      "vulnerabilityAlerts": true,
+      "prPriority": 10,
+      "schedule": ["at any time"],
+      "labels": ["security", "critical"],
+      "assignees": ["@danieleschmidt"],
+      "reviewers": ["@danieleschmidt"]
+    },
+    {
+      "description": "Group Python development tools",
+      "groupName": "Python dev tools",
+      "matchPackageNames": [
+        "black",
+        "flake8",
+        "isort",
+        "mypy",
+        "pytest",
+        "pytest-asyncio",
+        "pytest-cov",
+        "pytest-mock",
+        "bandit",
+        "safety",
+        "ruff",
+        "pre-commit"
+      ],
+      "schedule": ["before 6am on monday"],
+      "labels": ["dependencies", "python", "dev-tools"]
+    },
+    {
+      "description": "Group Python production dependencies",
+      "groupName": "Python production",
+      "matchPackageNames": [
+        "fastapi",
+        "uvicorn",
+        "crewai",
+        "pydantic",
+        "cookiecutter"
+      ],
+      "schedule": ["before 6am on monday"],
+      "labels": ["dependencies", "python", "production"]
+    },
+    {
+      "description": "Group JavaScript/Node testing tools",
+      "groupName": "JS testing tools",
+      "matchPackageNames": [
+        "@playwright/test",
+        "jest",
+        "cypress",
+        "@testing-library/react",
+        "@testing-library/jest-dom",
+        "@testing-library/user-event"
+      ],
+      "schedule": ["before 6am on monday"],
+      "labels": ["dependencies", "javascript", "testing"]
+    },
+    {
+      "description": "Group semantic release packages",
+      "groupName": "Semantic release",
+      "matchPackageNames": [
+        "semantic-release",
+        "@semantic-release/changelog",
+        "@semantic-release/git",
+        "@semantic-release/github",
+        "@commitlint/cli",
+        "@commitlint/config-conventional",
+        "commitizen",
+        "husky"
+      ],
+      "schedule": ["before 6am on monday"],
+      "labels": ["dependencies", "release", "automation"]
+    },
+    {
+      "description": "Group ESLint and Prettier",
+      "groupName": "Code formatting",
+      "matchPackageNames": [
+        "eslint",
+        "prettier",
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/parser",
+        "eslint-config-prettier",
+        "eslint-plugin-prettier"
+      ],
+      "schedule": ["before 6am on monday"],
+      "labels": ["dependencies", "javascript", "formatting"]
+    },
+    {
+      "description": "Docker base images - separate PRs",
+      "matchDatasources": ["docker"],
+      "separateMinorPatch": true,
+      "schedule": ["before 6am on wednesday"],
+      "labels": ["dependencies", "docker"]
+    },
+    {
+      "description": "GitHub Actions - automatic merging for patch updates",
+      "matchDatasources": ["github-tags"],
+      "matchDepTypes": ["action"],
+      "automerge": true,
+      "automergeType": "pr",
+      "requiredStatusChecks": null,
+      "schedule": ["before 6am on tuesday"],
+      "labels": ["dependencies", "github-actions"]
+    },
+    {
+      "description": "TypeScript and type definitions",
+      "groupName": "TypeScript",
+      "matchPackageNames": [
+        "typescript",
+        "@types/node",
+        "@types/react",
+        "@types/react-dom"
+      ],
+      "matchPackagePatterns": ["^@types/"],
+      "schedule": ["before 6am on monday"],
+      "labels": ["dependencies", "typescript", "types"]
+    },
+    {
+      "description": "Pin Docker images to specific versions",
+      "matchDatasources": ["docker"],
+      "versioning": "docker",
+      "pinDigests": true
+    },
+    {
+      "description": "Disable updates for internal packages",
+      "matchPackagePatterns": ["^agentic-startup-studio"],
+      "enabled": false
+    },
+    {
+      "description": "Require manual approval for major updates",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true,
+      "prCreation": "approval",
+      "labels": ["dependencies", "major-update"]
+    }
+  ],
+  "regexManagers": [
+    {
+      "description": "Update Python version in Dockerfiles",
+      "fileMatch": ["(^|/|\\.)Dockerfile$", "(^|/)Dockerfile\\.[^/]*$"],
+      "matchStrings": ["FROM python:(?<currentValue>.*?)-"],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "python"
+    },
+    {
+      "description": "Update Node version in Dockerfiles",
+      "fileMatch": ["(^|/|\\.)Dockerfile$", "(^|/)Dockerfile\\.[^/]*$"],
+      "matchStrings": ["FROM node:(?<currentValue>.*?)-"],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "node"
+    }
+  ],
+  "hostRules": [
+    {
+      "matchHost": "ghcr.io",
+      "hostType": "docker",
+      "username": "username",
+      "encrypted": {
+        "password": "encrypted_token"
+      }
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update dependencies in shell scripts",
+      "fileMatch": ["^scripts/.*\\.sh$"],
+      "matchStrings": ["# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)\\n.*?version=(?<currentValue>.*)"],
+      "versioningTemplate": "semver"
+    }
+  ]
+}

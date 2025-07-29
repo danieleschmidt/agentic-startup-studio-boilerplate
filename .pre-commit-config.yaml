@@ -200,6 +200,61 @@ repos:
           - --remove-duplicate-keys
           - --expand-star-imports
 
+  # Modern Python linting with Ruff (alternative to flake8, faster)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # SBOM generation for supply chain security
+  - repo: https://github.com/anchore/syft
+    rev: v0.99.0
+    hooks:
+      - id: syft
+        args: ['dir:.', '-o', 'spdx-json=sbom.json']
+        stages: [manual]
+
+  # Container image security scanning
+  - repo: https://github.com/aquasecurity/trivy
+    rev: v0.48.3
+    hooks:
+      - id: trivy
+        args: ['fs', '.', '--format', 'sarif', '--output', 'trivy-results.sarif']
+        stages: [manual]
+
+  # OpenAPI/Swagger validation
+  - repo: https://github.com/APIDevTools/swagger-parser
+    rev: v10.0.3
+    hooks:
+      - id: swagger-parser
+        files: '\.ya?ml$|\.json$'
+        exclude: '^(?!.*openapi|.*swagger)'
+        stages: [manual]
+
+  # GitHub Actions workflow linting
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.6.26
+    hooks:
+      - id: actionlint-docker
+        stages: [manual]
+
+  # Environment variable validation
+  - repo: https://github.com/sbdchd/dotenv-linter
+    rev: v3.3.0
+    hooks:
+      - id: dotenv-linter
+        files: '\.env.*$'
+
+  # SQL formatting and linting
+  - repo: https://github.com/sqlfluff/sqlfluff
+    rev: 2.3.5
+    hooks:
+      - id: sqlfluff-lint
+      - id: sqlfluff-fix
+        stages: [manual]
+
 # Global configuration
 ci:
   autofix_commit_msg: |
