@@ -1,0 +1,62 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    "security:openssf-scorecard",
+    "docker:enableMajor",
+    ":semanticCommits",
+    ":dependencyDashboard",
+    ":gitSignOff",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "timezone": "UTC",
+  "schedule": ["before 6am on monday"],
+  "labels": ["dependencies", "renovate"],
+  "assignees": ["@danieleschmidt"],
+  "reviewers": ["@danieleschmidt"],
+  "packageRules": [
+    {
+      "description": "Automerge patch updates for production dependencies",
+      "matchUpdateTypes": ["patch"],
+      "matchDepTypes": ["dependencies"],
+      "automerge": true,
+      "platformAutomerge": true
+    },
+    {
+      "description": "Group Python dependencies",
+      "matchLanguages": ["python"],
+      "groupName": "python dependencies"
+    },
+    {
+      "description": "Group Node.js dependencies", 
+      "matchLanguages": ["node"],
+      "groupName": "node dependencies"
+    },
+    {
+      "description": "Group Docker base images",
+      "matchDatasources": ["docker"],
+      "groupName": "docker images"
+    },
+    {
+      "description": "Separate security updates with high priority",
+      "matchPackagePatterns": ["security", "vulnerability"],
+      "labels": ["security", "high-priority"],
+      "priorityIncrease": 10
+    },
+    {
+      "description": "Limit AI/ML package updates to avoid breaking changes",
+      "matchPackagePatterns": ["openai", "anthropic", "crewai", "langchain"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "addLabels": ["security", "vulnerability"]
+  },
+  "osvVulnerabilityAlerts": true,
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "🔄 Dependency Updates Dashboard",
+  "configMigration": true,
+  "platformCommit": true
+}
