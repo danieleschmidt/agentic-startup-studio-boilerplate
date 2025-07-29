@@ -30,6 +30,7 @@
         "ms-python.flake8",
         "ms-python.black-formatter",
         "ms-python.isort",
+        "ms-python.mypy-type-checker",
         "ms-vscode.vscode-typescript-next",
         "bradlc.vscode-tailwindcss",
         "esbenp.prettier-vscode",
@@ -39,11 +40,16 @@
         "redhat.vscode-yaml",
         "ms-vscode.test-adapter-converter",
         "ms-vscode.extension-test-runner",
+        "ms-playwright.playwright",
         "github.copilot",
         "github.copilot-chat",
         "streetsidesoftware.code-spell-checker",
         "ms-vscode.vscode-json",
-        "ms-kubernetes-tools.vscode-kubernetes-tools"
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "usernamehw.errorlens",
+        "christian-kohler.path-intellisense",
+        "formulahendry.auto-rename-tag",
+        "ms-toolsai.jupyter"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
