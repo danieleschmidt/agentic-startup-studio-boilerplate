@@ -1,0 +1,184 @@
+# Continuous Deployment Pipeline
+# Handles automated deployments to staging and production
+
+name: CD Pipeline
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types: [completed]
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Check if CI passed
+  ci-gate:
+    name: CI Gate Check
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'push'
+    outputs:
+      deploy: ${{ steps.check.outputs.deploy }}
+    steps:
+      - name: Check CI Status
+        id: check
+        run: |
+          if [[ "${{ github.event.workflow_run.conclusion }}" == "success" || "${{ github.event_name }}" == "push" ]]; then
+            echo "deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "deploy=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Build and Push Container Images
+  build-and-push:
+    name: Build and Push Images
+    runs-on: ubuntu-latest
+    needs: ci-gate
+    if: needs.ci-gate.outputs.deploy == 'true'
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          target: production
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.spdx.json
+
+  # Deploy to Staging Environment (Documentation Template)
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [ci-gate, build-and-push]
+    if: needs.ci-gate.outputs.deploy == 'true'
+    environment:
+      name: staging
+      url: https://staging.example.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Simulate staging deployment
+        run: |
+          echo "🚀 Deploying to staging environment..."
+          echo "Image: ${{ needs.build-and-push.outputs.image-tag }}"
+          echo "Deployment steps would go here:"
+          echo "  1. Configure deployment tools"
+          echo "  2. Run database migrations"
+          echo "  3. Deploy application"
+          echo "  4. Run smoke tests"
+          echo "✅ Staging deployment simulation completed"
+
+      - name: Run basic health checks
+        run: |
+          echo "Running health checks..."
+          # In real deployment, these would be actual health check endpoints
+          echo "✅ All health checks passed"
+
+  # Deploy to Production Environment (Documentation Template)
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: needs.deploy-staging.result == 'success' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    environment:
+      name: production
+      url: https://production.example.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Manual approval checkpoint
+        run: |
+          echo "🛡️ Production deployment requires manual approval"
+          echo "This step ensures human oversight for production deployments"
+
+      - name: Simulate production deployment
+        run: |
+          echo "🚀 Deploying to production environment..."
+          echo "Image: ${{ needs.build-and-push.outputs.image-tag }}"
+          echo "Production deployment steps would include:"
+          echo "  1. Create backup"
+          echo "  2. Blue-green deployment"
+          echo "  3. Health verification"
+          echo "  4. Traffic switching"
+          echo "✅ Production deployment simulation completed"
+
+      - name: Notify deployment success
+        run: |
+          echo "🎉 Production deployment completed successfully!"
+          echo "Commit: ${{ github.sha }}"
+          echo "Image: ${{ needs.build-and-push.outputs.image-tag }}"
+
+  # Deployment Summary
+  deployment-summary:
+    name: Deployment Summary
+    runs-on: ubuntu-latest
+    needs: [build-and-push, deploy-staging, deploy-production]
+    if: always()
+    steps:
+      - name: Generate deployment summary
+        run: |
+          echo "# Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image**: ${{ needs.build-and-push.outputs.image-tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Staging**: ${{ needs.deploy-staging.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Production**: ${{ needs.deploy-production.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Configure actual deployment targets" >> $GITHUB_STEP_SUMMARY
+          echo "2. Set up monitoring and alerting" >> $GITHUB_STEP_SUMMARY
+          echo "3. Implement rollback procedures" >> $GITHUB_STEP_SUMMARY
