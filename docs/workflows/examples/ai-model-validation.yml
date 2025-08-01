@@ -1,0 +1,462 @@
+# AI Model Validation and Testing Workflow
+# Specialized workflow for testing AI models and CrewAI agents
+
+name: AI Model Validation
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'models/**'
+      - 'agents/**'
+      - 'crews/**'
+      - 'prompts/**'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'models/**'
+      - 'agents/**'
+      - 'crews/**'
+      - 'prompts/**'
+  schedule:
+    # Run model validation daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      model_name:
+        description: 'Specific model to test'
+        required: false
+        default: 'all'
+      test_suite:
+        description: 'Test suite to run'
+        required: false
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - smoke
+          - performance
+          - quality
+
+env:
+  PYTHON_VERSION: '3.11'
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+  MODEL_TEST_TIMEOUT: 300  # 5 minutes per model test
+
+jobs:
+  # Model Configuration Validation
+  model-config-validation:
+    name: Model Configuration Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install jsonschema pydantic
+
+      - name: Validate model configurations
+        run: |
+          python scripts/validate_model_configs.py
+          echo "✅ All model configurations are valid"
+
+      - name: Validate agent definitions
+        run: |
+          python scripts/validate_agent_configs.py
+          echo "✅ All agent definitions are valid"
+
+      - name: Validate crew compositions
+        run: |
+          python scripts/validate_crew_configs.py
+          echo "✅ All crew compositions are valid"
+
+  # Model Performance Benchmarks
+  model-performance:
+    name: Model Performance Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        model: [gpt-4, gpt-3.5-turbo, claude-3-sonnet]
+      fail-fast: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest-benchmark memory-profiler
+
+      - name: Run performance benchmarks
+        env:
+          MODEL_NAME: ${{ matrix.model }}
+        run: |
+          pytest tests/ai/performance/ \
+            --benchmark-only \
+            --benchmark-json=benchmark-${{ matrix.model }}.json \
+            -v
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-${{ matrix.model }}
+          path: benchmark-${{ matrix.model }}.json
+
+  # Agent Task Validation
+  agent-validation:
+    name: Agent Task Validation
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest-asyncio pytest-timeout
+
+      - name: Test individual agents
+        env:
+          REDIS_URL: redis://localhost:6379/0
+          TESTING: true
+        run: |
+          pytest tests/ai/agents/ \
+            --timeout=${{ env.MODEL_TEST_TIMEOUT }} \
+            --junit-xml=agent-test-results.xml \
+            -v
+
+      - name: Test crew workflows
+        env:
+          REDIS_URL: redis://localhost:6379/0
+          TESTING: true
+        run: |
+          pytest tests/ai/crews/ \
+            --timeout=${{ env.MODEL_TEST_TIMEOUT }} \
+            --junit-xml=crew-test-results.xml \
+            -v
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agent-validation-results
+          path: |
+            agent-test-results.xml
+            crew-test-results.xml
+
+  # Quality Assurance Tests
+  model-quality:
+    name: Model Quality Assessment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install rouge-score bleu nltk textstat
+
+      - name: Download NLTK data
+        run: |
+          python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"
+
+      - name: Run output quality tests
+        run: |
+          pytest tests/ai/quality/ \
+            --junit-xml=quality-test-results.xml \
+            -v
+
+      - name: Evaluate prompt effectiveness
+        run: |
+          python scripts/evaluate_prompts.py \
+            --output-file=prompt-evaluation.json
+
+      - name: Check for bias and toxicity
+        run: |
+          python scripts/bias_toxicity_check.py \
+            --output-file=bias-toxicity-report.json
+
+      - name: Upload quality reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-assessment-reports
+          path: |
+            quality-test-results.xml
+            prompt-evaluation.json
+            bias-toxicity-report.json
+
+  # Model Drift Detection
+  drift-detection:
+    name: Model Drift Detection
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install scikit-learn numpy pandas
+
+      - name: Download baseline metrics
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws s3 cp s3://model-metrics-bucket/baseline/ ./baseline/ --recursive
+
+      - name: Run drift detection
+        run: |
+          python scripts/detect_model_drift.py \
+            --baseline-dir=./baseline \
+            --output-file=drift-report.json
+
+      - name: Upload drift report
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-detection-report
+          path: drift-report.json
+
+      - name: Create drift alert
+        if: failure()
+        run: |
+          echo "🚨 Model drift detected!" >> $GITHUB_STEP_SUMMARY
+          # Send alert to monitoring system
+          curl -X POST ${{ secrets.WEBHOOK_URL }} \
+            -H "Content-Type: application/json" \
+            -d '{"alert": "model_drift_detected", "repository": "${{ github.repository }}"}'
+
+  # Regression Testing
+  regression-tests:
+    name: Model Regression Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Download test datasets
+        run: |
+          python scripts/download_test_datasets.py
+
+      - name: Run regression tests
+        run: |
+          pytest tests/ai/regression/ \
+            --junit-xml=regression-test-results.xml \
+            --timeout=${{ env.MODEL_TEST_TIMEOUT }} \
+            -v
+
+      - name: Compare with baseline results
+        run: |
+          python scripts/compare_regression_results.py \
+            --current-results=regression-test-results.xml \
+            --baseline-results=tests/ai/regression/baseline_results.xml \
+            --output-file=regression-comparison.json
+
+      - name: Upload regression results
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-test-results
+          path: |
+            regression-test-results.xml
+            regression-comparison.json
+
+  # Cost and Usage Monitoring
+  cost-monitoring:
+    name: API Cost and Usage Monitoring
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install requests pandas matplotlib
+
+      - name: Collect API usage metrics
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python scripts/collect_api_metrics.py \
+            --output-file=api-usage-report.json
+
+      - name: Generate cost projections
+        run: |
+          python scripts/project_api_costs.py \
+            --usage-file=api-usage-report.json \
+            --output-file=cost-projections.json
+
+      - name: Create usage dashboard
+        run: |
+          python scripts/create_usage_dashboard.py \
+            --usage-file=api-usage-report.json \
+            --output-dir=usage-dashboard/
+
+      - name: Upload monitoring reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: cost-monitoring-reports
+          path: |
+            api-usage-report.json
+            cost-projections.json
+            usage-dashboard/
+
+  # Security and Safety Checks
+  ai-security:
+    name: AI Security and Safety Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install security tools
+        run: |
+          pip install -r requirements.txt
+          pip install transformers torch detoxify
+
+      - name: Check for prompt injection vulnerabilities
+        run: |
+          python scripts/test_prompt_injection.py \
+            --output-file=prompt-injection-report.json
+
+      - name: Test input sanitization
+        run: |
+          python scripts/test_input_sanitization.py \
+            --output-file=sanitization-report.json
+
+      - name: Check for data leakage
+        run: |
+          python scripts/test_data_leakage.py \
+            --output-file=data-leakage-report.json
+
+      - name: Validate content filtering
+        run: |
+          python scripts/test_content_filtering.py \
+            --output-file=content-filtering-report.json
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-security-reports
+          path: |
+            prompt-injection-report.json
+            sanitization-report.json
+            data-leakage-report.json
+            content-filtering-report.json
+
+  # Results Aggregation and Reporting
+  aggregate-results:
+    name: Aggregate Results and Report
+    runs-on: ubuntu-latest
+    needs: [model-config-validation, model-performance, agent-validation, model-quality, regression-tests, ai-security]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install reporting tools
+        run: |
+          pip install jinja2 pandas matplotlib seaborn
+
+      - name: Generate comprehensive report
+        run: |
+          python scripts/generate_ai_validation_report.py \
+            --artifacts-dir=. \
+            --output-file=ai-validation-report.html
+
+      - name: Upload comprehensive report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-validation-comprehensive-report
+          path: ai-validation-report.html
+
+      - name: Create summary
+        run: |
+          echo "# AI Model Validation Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Category | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Configuration | ${{ needs.model-config-validation.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Performance | ${{ needs.model-performance.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Agent Validation | ${{ needs.agent-validation.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Quality Assessment | ${{ needs.model-quality.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Regression Tests | ${{ needs.regression-tests.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Checks | ${{ needs.ai-security.result == 'success' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify stakeholders
+        if: failure()
+        run: |
+          echo "❌ AI Model validation failed - immediate attention required"
+          # Add notification logic here
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          #   -H "Content-Type: application/json" \
+          #   -d '{"text": "🚨 AI Model validation failed in ${{ github.repository }}"}'
