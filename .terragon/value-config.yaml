@@ -1,0 +1,266 @@
+# Terragon Autonomous SDLC Value Configuration
+# Repository: agentic-startup-studio-boilerplate
+# Maturity Level: MATURING (50-75% SDLC maturity)
+# Assessment Date: 2025-08-01
+
+metadata:
+  repository_name: "agentic-startup-studio-boilerplate"
+  maturity_level: "maturing"
+  assessment_date: "2025-08-01T00:00:00Z"
+  last_updated: "2025-08-01T00:00:00Z"
+  version: "1.0.0"
+
+# Adaptive scoring weights based on repository maturity
+scoring:
+  weights:
+    nascent:
+      wsjf: 0.4
+      ice: 0.3
+      technicalDebt: 0.2
+      security: 0.1
+    developing:
+      wsjf: 0.5
+      ice: 0.2
+      technicalDebt: 0.2
+      security: 0.1
+    maturing:  # Current repository state
+      wsjf: 0.6
+      ice: 0.1
+      technicalDebt: 0.2
+      security: 0.1
+    advanced:
+      wsjf: 0.5
+      ice: 0.1
+      technicalDebt: 0.3
+      security: 0.1
+  
+  # Scoring thresholds and multipliers
+  thresholds:
+    minScore: 1.0
+    maxRisk: 0.8
+    securityBoost: 2.0
+    complianceBoost: 1.8
+    performanceBoost: 1.5
+    debtPenalty: 0.7
+  
+  # Business value multipliers
+  business_multipliers:
+    user_facing: 1.5
+    revenue_impact: 2.0
+    compliance_critical: 1.8
+    security_critical: 2.2
+    performance_critical: 1.6
+    technical_enabler: 1.2
+
+# Value discovery configuration
+discovery:
+  # Signal sources for continuous value discovery
+  sources:
+    - gitHistory
+    - staticAnalysis
+    - issueTrackers
+    - vulnerabilityDatabases
+    - performanceMonitoring
+    - userFeedback
+    - dependencyUpdates
+    - codeComments
+    - testCoverage
+    - documentationGaps
+  
+  # Discovery tools and their configurations
+  tools:
+    staticAnalysis:
+      - name: "ruff"
+        enabled: true
+        config_file: "pyproject.toml"
+      - name: "mypy"
+        enabled: true
+        config_file: "pyproject.toml"
+      - name: "eslint"
+        enabled: true
+        config_file: ".eslintrc.js"
+    
+    security:
+      - name: "bandit"
+        enabled: true
+        config_file: "pyproject.toml"
+      - name: "safety"
+        enabled: true
+      - name: "npm-audit"
+        enabled: true
+      - name: "trivy"
+        enabled: true
+    
+    testing:
+      - name: "pytest"
+        enabled: true
+        config_file: "pyproject.toml"
+        coverage_threshold: 80
+      - name: "playwright"
+        enabled: true
+        config_file: "playwright.config.js"
+    
+    performance:
+      - name: "lighthouse"
+        enabled: false  # Web app performance
+      - name: "locust"
+        enabled: false  # Load testing
+    
+    dependencies:
+      - name: "renovate"
+        enabled: true
+        config_file: "renovate.json"
+      - name: "dependabot"
+        enabled: false
+  
+  # Automated discovery schedules
+  schedules:
+    security_scan: "0 */6 * * *"    # Every 6 hours
+    dependency_check: "0 2 * * *"   # Daily at 2 AM
+    static_analysis: "0 3 * * *"    # Daily at 3 AM
+    performance_check: "0 4 * * 1"  # Weekly on Monday at 4 AM
+    deep_analysis: "0 5 1 * *"      # Monthly on 1st at 5 AM
+
+# Task execution configuration
+execution:
+  # Execution constraints
+  maxConcurrentTasks: 1
+  maxExecutionTimeMinutes: 60
+  maxRetries: 3
+  
+  # Quality gates that must pass
+  quality_gates:
+    tests_pass: true
+    lint_pass: true
+    type_check_pass: true
+    security_scan_pass: true
+    min_coverage: 80
+    max_complexity: 10
+    performance_regression_threshold: 0.05  # 5%
+  
+  # Test requirements
+  testRequirements:
+    minCoverage: 80
+    performanceRegression: 5
+    securityVulnerabilities: 0
+    criticalIssues: 0
+  
+  # Rollback triggers
+  rollbackTriggers:
+    - testFailure
+    - buildFailure
+    - securityViolation
+    - performanceRegression
+    - lintFailure
+    - typeCheckFailure
+  
+  # Branch naming convention for autonomous work
+  branch_naming:
+    prefix: "auto-value"
+    format: "{prefix}/{item_id}-{item_slug}"
+    max_length: 50
+
+# Learning and adaptation configuration
+learning:
+  # Prediction accuracy tracking
+  prediction_tracking:
+    enabled: true
+    accuracy_threshold: 0.8
+    confidence_adjustment_rate: 0.1
+    effort_estimation_window: 30  # days
+  
+  # Feedback collection
+  feedback:
+    collect_pr_reviews: true
+    collect_execution_metrics: true
+    collect_business_outcomes: true
+    collect_user_satisfaction: false  # Not applicable for template
+  
+  # Model adaptation
+  adaptation:
+    recalibration_frequency: "weekly"
+    learning_rate: 0.05
+    min_data_points: 10
+
+# Repository-specific value patterns
+value_patterns:
+  # High-value work types for this cookiecutter template
+  high_value_types:
+    - template_improvements
+    - documentation_enhancements
+    - security_updates
+    - dependency_updates
+    - automation_improvements
+    - developer_experience
+    - performance_optimizations
+  
+  # Low-value work types
+  low_value_types:
+    - cosmetic_changes
+    - minor_refactoring
+    - comment_updates
+  
+  # Critical paths (files that impact multiple areas)
+  critical_paths:
+    - "cookiecutter.json"
+    - "package.json"
+    - "pyproject.toml"
+    - "docker-compose.yml"
+    - "Dockerfile"
+    - "README.md"
+    - "scripts/automation/*"
+
+# Compliance and governance
+compliance:
+  # Required approvals for different change types
+  approval_requirements:
+    security_changes: ["security-team"]
+    infrastructure_changes: ["platform-team"]
+    breaking_changes: ["maintainers"]
+    dependency_updates: ["auto-approve"]
+  
+  # Audit requirements
+  audit:
+    track_all_changes: true
+    require_change_justification: true
+    maintain_decision_log: true
+
+# Integration settings
+integrations:
+  github:
+    enabled: true
+    auto_assign_reviewers: true
+    use_codeowners: true
+    auto_label: true
+    create_draft_prs: false
+  
+  monitoring:
+    enabled: false
+    prometheus_endpoint: ""
+    grafana_dashboard: ""
+  
+  notifications:
+    slack_webhook: ""
+    email_notifications: false
+    pr_notifications: true
+
+# Repository context for value calculation
+context:
+  primary_language: "python"
+  secondary_languages: ["javascript", "typescript"]
+  framework: "cookiecutter"
+  deployment_type: "template"
+  user_base_size: "unknown"
+  criticality: "medium"
+  compliance_requirements: ["apache-2.0"]
+  
+  # Current tooling assessment
+  existing_tooling:
+    ci_cd: true
+    testing: true
+    linting: true
+    security_scanning: true
+    dependency_management: true
+    documentation: true
+    monitoring: false
+    logging: false
