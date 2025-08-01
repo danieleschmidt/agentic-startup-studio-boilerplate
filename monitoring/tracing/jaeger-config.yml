@@ -1,0 +1,229 @@
+# Jaeger distributed tracing configuration for Agentic Startup Studio
+
+# Service configuration
+service:
+  name: agentic-startup-studio
+  version: "0.2.0"
+  environment: ${ENVIRONMENT:-production}
+
+# Sampling configuration
+sampling:
+  # Sampling strategies
+  strategies:
+    default_strategy:
+      type: probabilistic
+      param: 0.1  # Sample 10% of traces in production
+    
+    per_service_strategies:
+      - service: "agentic-startup-api"
+        type: probabilistic
+        param: 0.2  # Sample 20% of API traces
+        
+      - service: "crewai-agents"
+        type: probabilistic
+        param: 0.5  # Sample 50% of agent traces
+        
+      - service: "model-inference"
+        type: probabilistic
+        param: 0.3  # Sample 30% of model traces
+        
+      - service: "auth-service"
+        type: probabilistic
+        param: 1.0  # Sample 100% of auth traces (security)
+
+    # Operation-specific sampling
+    per_operation_strategies:
+      - operation: "POST /api/v1/agents/tasks"
+        service: "agentic-startup-api"
+        type: probabilistic
+        param: 1.0  # Always trace task creation
+        
+      - operation: "GET /health"
+        service: "*"
+        type: probabilistic
+        param: 0.01  # Minimal sampling for health checks
+        
+      - operation: "inference"
+        service: "model-inference"
+        type: probabilistic
+        param: 0.8  # High sampling for model inference
+
+# Reporter configuration
+reporter:
+  # Queue settings
+  queueSize: 1000
+  bufferFlushInterval: 1s
+  
+  # Jaeger agent configuration
+  localAgentHostPort: jaeger-agent:6831
+  
+  # Jaeger collector configuration (alternative to agent)
+  collectorEndpoint: http://jaeger-collector:14268/api/traces
+  
+  # Authentication (if required)
+  # user: username
+  # password: password
+  
+  # Logging
+  logSpans: false
+
+# Headers configuration
+headers:
+  # Trace context headers
+  jaegerDebugHeader: "jaeger-debug-id"
+  jaegerBaggageHeader: "jaeger-baggage"
+  TraceContextHeaderName: "uber-trace-id"
+  
+  # Custom headers to propagate
+  custom:
+    - "x-user-id"
+    - "x-tenant-id"
+    - "x-request-id"
+    - "x-correlation-id"
+
+# Baggage restrictions
+baggage:
+  restrictions:
+    denyBaggageOnInitializationFailure: false
+    maxValueLength: 2048
+  
+  # Remote restrictions (optional)
+  # refreshInterval: 60s
+  # hostPort: jaeger-agent:5778
+
+# Throttling configuration
+throttler:
+  hostPort: jaeger-agent:5778
+  refreshInterval: 5s
+  synchronousInitialization: false
+
+# Process tags (applied to all spans)
+tags:
+  - key: "deployment.environment"
+    value: "${ENVIRONMENT}"
+    
+  - key: "service.version"
+    value: "${APP_VERSION}"
+    
+  - key: "service.namespace"
+    value: "agentic-startup"
+    
+  - key: "cluster.name"
+    value: "${CLUSTER_NAME:-default}"
+    
+  - key: "region"
+    value: "${AWS_REGION:-us-east-1}"
+
+# Instrumentation configuration
+instrumentation:
+  # HTTP instrumentation
+  http:
+    nameFormatter: "method_and_route"  # or "method_and_path"
+    skipHealthEndpoints: true
+    captureHeaders:
+      request:
+        - "user-agent"
+        - "x-forwarded-for"
+        - "x-real-ip"
+        - "authorization"  # Be careful with sensitive headers
+      response:
+        - "content-type"
+        - "cache-control"
+  
+  # Database instrumentation
+  database:
+    captureStatements: true
+    maxStatementLength: 1024
+    omitLongStatements: true
+    
+  # Redis instrumentation  
+  redis:
+    captureCommands: true
+    maxCommandLength: 512
+
+# Custom span attributes for AI/ML workloads
+custom_attributes:
+  ai_model:
+    - "model.name"
+    - "model.version" 
+    - "model.provider"
+    - "tokens.input"
+    - "tokens.output"
+    - "temperature"
+    - "max_tokens"
+    
+  agent:
+    - "agent.id"
+    - "agent.name"
+    - "agent.role"
+    - "task.id"
+    - "task.type"
+    - "crew.id"
+    - "tools.used"
+    
+  business:
+    - "user.id"
+    - "tenant.id"
+    - "feature.flag"
+    - "experiment.id"
+    - "cohort.id"
+
+# Metrics configuration (if using Jaeger with metrics)
+metrics:
+  factory: prometheus
+  prometheus:
+    registerer: default
+    buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+
+# Security configuration
+security:
+  # Enable/disable trace data sanitization
+  sanitize: true
+  
+  # Fields to sanitize/redact
+  redact_fields:
+    - "password"
+    - "token"
+    - "api_key"
+    - "secret"
+    - "authorization"
+    - "x-api-key"
+  
+  # Maximum span size to prevent DoS
+  max_span_size: 65536  # 64KB
+  
+  # Maximum number of tags per span
+  max_tags_per_span: 100
+
+# Performance tuning
+performance:
+  # Span buffer settings
+  span_buffer_size: 1000
+  flush_interval: "1s"
+  
+  # Connection pool settings
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: "1h"
+  
+  # Retry settings
+  max_retries: 3
+  retry_backoff: "100ms"
+
+# Development settings (override in development)
+development:
+  sampling:
+    default_strategy:
+      type: const
+      param: 1  # Sample 100% in development
+  
+  reporter:
+    logSpans: true
+    queueSize: 100
+    bufferFlushInterval: 100ms
+  
+  instrumentation:
+    http:
+      skipHealthEndpoints: false
+    database:
+      captureStatements: true
