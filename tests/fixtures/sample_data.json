@@ -1,0 +1,278 @@
+{
+  "users": [
+    {
+      "id": "user-001",
+      "email": "alice@example.com",
+      "username": "alice",
+      "full_name": "Alice Johnson",
+      "is_active": true,
+      "is_verified": true,
+      "created_at": "2025-01-01T10:00:00Z",
+      "roles": ["user", "project_owner"]
+    },
+    {
+      "id": "user-002", 
+      "email": "bob@example.com",
+      "username": "bob",
+      "full_name": "Bob Smith",
+      "is_active": true,
+      "is_verified": false,
+      "created_at": "2025-01-02T11:00:00Z",
+      "roles": ["user"]
+    }
+  ],
+  "projects": [
+    {
+      "id": "project-001",
+      "name": "AI Research Platform",
+      "description": "An advanced AI research platform for accelerating ML experiments",
+      "owner_id": "user-001",
+      "tech_stack": ["fastapi", "react", "crewai", "postgresql"],
+      "status": "active",
+      "created_at": "2025-01-01T12:00:00Z",
+      "config": {
+        "features": ["authentication", "analytics", "notifications"],
+        "deployment": "kubernetes",
+        "monitoring": true
+      }
+    },
+    {
+      "id": "project-002",
+      "name": "E-commerce Assistant",
+      "description": "Intelligent e-commerce assistant with recommendation engine",
+      "owner_id": "user-002",
+      "tech_stack": ["fastapi", "vue", "crewai", "redis"],
+      "status": "development",
+      "created_at": "2025-01-03T14:00:00Z",
+      "config": {
+        "features": ["payments", "inventory", "recommendations"],
+        "deployment": "docker-compose",
+        "monitoring": false
+      }
+    }
+  ],
+  "agents": [
+    {
+      "id": "agent-001",
+      "name": "Research Analyst",
+      "role": "researcher",
+      "goal": "Conduct comprehensive research on given topics and provide detailed analysis",
+      "backstory": "An experienced AI agent with expertise in data analysis and research methodologies",
+      "tools": ["web_search", "document_analysis", "data_visualization"],
+      "project_id": "project-001",
+      "config": {
+        "model": "gpt-4",
+        "temperature": 0.3,
+        "max_tokens": 2000
+      }
+    },
+    {
+      "id": "agent-002",
+      "name": "Code Generator",
+      "role": "developer",
+      "goal": "Generate high-quality code based on specifications and best practices",
+      "backstory": "A skilled AI developer with deep knowledge of software architecture and coding patterns",
+      "tools": ["code_generation", "testing", "documentation"],
+      "project_id": "project-001",
+      "config": {
+        "model": "gpt-4",
+        "temperature": 0.1,
+        "max_tokens": 4000
+      }
+    },
+    {
+      "id": "agent-003",
+      "name": "Product Recommender",
+      "role": "analyst",
+      "goal": "Analyze user behavior and provide personalized product recommendations",
+      "backstory": "An AI specialist in recommendation systems and customer behavior analysis",
+      "tools": ["data_analysis", "ml_models", "user_profiling"],
+      "project_id": "project-002",
+      "config": {
+        "model": "gpt-3.5-turbo",
+        "temperature": 0.5,
+        "max_tokens": 1500
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task-001",
+      "description": "Research the latest trends in AI and machine learning for 2025",
+      "expected_output": "A comprehensive report with insights, trends, and predictions for AI/ML in 2025",
+      "agent_id": "agent-001",
+      "project_id": "project-001",
+      "status": "pending",
+      "priority": "high",
+      "created_at": "2025-01-01T15:00:00Z",
+      "metadata": {
+        "deadline": "2025-01-15T23:59:59Z",
+        "complexity": "high",
+        "estimated_hours": 8
+      }
+    },
+    {
+      "id": "task-002", 
+      "description": "Generate FastAPI endpoints for user management",
+      "expected_output": "Complete FastAPI code with CRUD operations, authentication, and validation",
+      "agent_id": "agent-002",
+      "project_id": "project-001",
+      "status": "in_progress",
+      "priority": "medium",
+      "created_at": "2025-01-02T09:00:00Z",
+      "metadata": {
+        "deadline": "2025-01-10T17:00:00Z",
+        "complexity": "medium",
+        "estimated_hours": 4
+      }
+    },
+    {
+      "id": "task-003",
+      "description": "Analyze customer purchase patterns and create recommendation model",
+      "expected_output": "ML model for product recommendations with performance metrics",
+      "agent_id": "agent-003",
+      "project_id": "project-002",
+      "status": "completed",
+      "priority": "high",
+      "created_at": "2025-01-01T08:00:00Z",
+      "completed_at": "2025-01-05T16:30:00Z",
+      "metadata": {
+        "deadline": "2025-01-07T23:59:59Z",
+        "complexity": "high",
+        "estimated_hours": 12,
+        "actual_hours": 10
+      }
+    }
+  ],
+  "api_responses": {
+    "health_check": {
+      "status": "healthy",
+      "timestamp": "2025-01-01T12:00:00Z",
+      "version": "0.2.0",
+      "environment": "test",
+      "services": {
+        "database": "connected",
+        "redis": "connected",
+        "auth": "ready"
+      }
+    },
+    "error_invalid_request": {
+      "error": "Invalid request",
+      "message": "The request body is missing required fields",
+      "status_code": 400,
+      "timestamp": "2025-01-01T12:00:00Z"
+    },
+    "error_unauthorized": {
+      "error": "Unauthorized",
+      "message": "Valid authentication token is required",
+      "status_code": 401,
+      "timestamp": "2025-01-01T12:00:00Z"
+    },
+    "error_not_found": {
+      "error": "Not found",
+      "message": "The requested resource was not found",
+      "status_code": 404,
+      "timestamp": "2025-01-01T12:00:00Z"
+    }
+  },
+  "test_configurations": {
+    "database": {
+      "url": "sqlite:///./test.db",
+      "pool_size": 5,
+      "echo": false
+    },
+    "redis": {
+      "url": "redis://localhost:6379/1",
+      "decode_responses": true
+    },
+    "auth": {
+      "secret_key": "test-secret-key-for-testing",
+      "algorithm": "HS256",
+      "expire_minutes": 30
+    },
+    "external_apis": {
+      "openai": {
+        "api_key": "test-openai-key",
+        "model": "gpt-3.5-turbo",
+        "timeout": 30
+      },
+      "mock_responses": true
+    }
+  },
+  "performance_benchmarks": {
+    "api_endpoints": {
+      "/api/v1/health": {
+        "max_response_time_ms": 50,
+        "target_rps": 1000
+      },
+      "/api/v1/projects": {
+        "max_response_time_ms": 200,
+        "target_rps": 100
+      },
+      "/api/v1/agents": {
+        "max_response_time_ms": 300,
+        "target_rps": 50
+      },
+      "/api/v1/tasks": {
+        "max_response_time_ms": 500,
+        "target_rps": 25
+      }
+    },
+    "load_test_scenarios": [
+      {
+        "name": "normal_load",
+        "duration": "5m",
+        "virtual_users": 10,
+        "ramp_up": "1m"
+      },
+      {
+        "name": "peak_load",
+        "duration": "10m", 
+        "virtual_users": 50,
+        "ramp_up": "2m"
+      },
+      {
+        "name": "stress_test",
+        "duration": "15m",
+        "virtual_users": 100,
+        "ramp_up": "5m"
+      }
+    ]
+  },
+  "security_test_data": {
+    "sql_injection_payloads": [
+      "'; DROP TABLE users; --",
+      "' OR '1'='1",
+      "1' UNION SELECT * FROM users--",
+      "admin'--",
+      "' OR 1=1#"
+    ],
+    "xss_payloads": [
+      "<script>alert('xss')</script>",
+      "javascript:alert('xss')",
+      "<img src=x onerror=alert('xss')>",
+      "<svg onload=alert('xss')>",
+      "'\"><script>alert('xss')</script>"
+    ],
+    "path_traversal_payloads": [
+      "../../../etc/passwd",
+      "..\\..\\..\\windows\\system32\\config\\sam",
+      "%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd",
+      "....//....//....//etc/passwd"
+    ],
+    "command_injection_payloads": [
+      "; cat /etc/passwd",
+      "| whoami",
+      "&& rm -rf /",
+      "`whoami`",
+      "$(whoami)"
+    ],
+    "invalid_tokens": [
+      "invalid.jwt.token",
+      "Bearer invalid",
+      "expired.token.here",
+      "",
+      "null"
+    ]
+  }
+}
