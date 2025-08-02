@@ -1,0 +1,78 @@
+# CODEOWNERS file for Agentic Startup Studio Boilerplate
+# This file defines code ownership and review requirements for different parts of the repository.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global owners - these users will be requested for review on all PRs unless overridden
+* @danieleschmidt
+
+# Documentation owners
+*.md @danieleschmidt
+docs/ @danieleschmidt
+README.md @danieleschmidt
+
+# Core configuration files
+.github/ @danieleschmidt
+.devcontainer/ @danieleschmidt
+Dockerfile @danieleschmidt
+docker-compose*.yml @danieleschmidt
+Makefile @danieleschmidt
+pyproject.toml @danieleschmidt
+package.json @danieleschmidt
+
+# Security and compliance
+SECURITY.md @danieleschmidt
+.pre-commit-config.yaml @danieleschmidt
+docs/workflows/slsa-compliance.md @danieleschmidt
+
+# Testing infrastructure
+tests/ @danieleschmidt
+pytest.ini @danieleschmidt
+playwright.config.js @danieleschmidt
+.coveragerc @danieleschmidt
+
+# Automation and scripts
+scripts/ @danieleschmidt
+.github/project-metrics.json @danieleschmidt
+
+# Monitoring and observability
+monitoring/ @danieleschmidt
+docs/monitoring/ @danieleschmidt
+docs/runbooks/ @danieleschmidt
+
+# Deployment and infrastructure
+docs/deployment/ @danieleschmidt
+docs/workflows/ @danieleschmidt
+
+# Frontend code (when implemented)
+frontend/ @danieleschmidt
+*.js @danieleschmidt
+*.ts @danieleschmidt
+*.tsx @danieleschmidt
+*.jsx @danieleschmidt
+
+# Backend code (when implemented)  
+backend/ @danieleschmidt
+*.py @danieleschmidt
+requirements*.txt @danieleschmidt
+
+# Configuration files
+*.yml @danieleschmidt
+*.yaml @danieleschmidt
+*.json @danieleschmidt
+*.toml @danieleschmidt
+*.ini @danieleschmidt
+
+# Environment and secrets
+.env.example @danieleschmidt
+.gitignore @danieleschmidt
+
+# Special files requiring extra attention
+LICENSE @danieleschmidt
+CODE_OF_CONDUCT.md @danieleschmidt
+CONTRIBUTING.md @danieleschmidt
+CHANGELOG.md @danieleschmidt
+
+# Terragon implementation files
+TERRAGON_*.md @danieleschmidt
+AUTONOMOUS_*.md @danieleschmidt
+ADVANCED_*.md @danieleschmidt
