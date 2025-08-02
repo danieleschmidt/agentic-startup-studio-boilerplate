@@ -1,113 +1,175 @@
 {
-  "project": {
-    "name": "agentic-startup-studio-boilerplate",
-    "version": "0.2.0",
-    "description": "A comprehensive boilerplate for building agentic startups with CrewAI, FastAPI, and React",
-    "created": "2025-07-01",
-    "last_updated": "2025-07-28",
-    "license": "Apache-2.0",
-    "language": "Python",
-    "framework": "FastAPI",
-    "frontend": "React",
-    "ai_framework": "CrewAI"
-  },
-  "sdlc_completeness": 95,
   "automation_coverage": 92,
-  "security_score": 88,
-  "documentation_health": 95,
-  "test_coverage": 85,
+  "automation_status": {
+    "alert_management": "enabled",
+    "backup_verification": "enabled",
+    "dependency_updates": "enabled",
+    "metrics_collection": "enabled",
+    "performance_monitoring": "enabled",
+    "security_scanning": "enabled"
+  },
+  "code_metrics": {
+    "complexity": {
+      "python_complexity": "not_available"
+    },
+    "file_counts": {
+      "js": 1,
+      "json": 18,
+      "md": 49,
+      "py": 30,
+      "yaml": 3,
+      "yml": 17
+    },
+    "lines_of_code": {
+      "javascript": 113,
+      "python": 9783,
+      "total": 9896,
+      "typescript": 0
+    }
+  },
+  "collection_timestamp": "2025-08-02T23:57:40.793623+00:00",
+  "dependencies": {
+    "nodejs_dependencies": 0,
+    "nodejs_dev_dependencies": 11,
+    "python_dependencies": 83
+  },
   "deployment_reliability": 94,
+  "docker_metrics": {
+    "docker_compose_present": true,
+    "dockerfile_present": true,
+    "dockerignore_present": true,
+    "multi_stage_build": true
+  },
+  "documentation_health": 95,
+  "git_metrics": {
+    "commits_last_30_days": 67,
+    "contributors_count": 1,
+    "last_commit_date": "2025-08-02 07:58:10 -0400",
+    "remote_branches": 26,
+    "total_commits": 67
+  },
+  "github_metrics": {
+    "error": "no_github_token"
+  },
+  "last_updated": "2025-08-02T23:57:40.721966+00:00",
   "maintenance_automation": 89,
-  "last_updated": "2025-07-28T06:00:00Z",
   "metrics": {
-    "planning": {
-      "requirements_documented": true,
-      "architecture_documented": true,
-      "adr_structure": true,
-      "roadmap_updated": true,
-      "project_charter": true
+    "build_packaging": {
+      "build_automation": true,
+      "docker_compose_present": true,
+      "dockerfile_present": true,
+      "dockerignore_present": true,
+      "multi_stage_builds": true,
+      "semantic_release_configured": true
+    },
+    "cicd": {
+      "deployment_templates": true,
+      "issue_templates": true,
+      "matrix_testing_templates": true,
+      "pr_templates": true,
+      "security_scanning_templates": true,
+      "workflow_documentation": true,
+      "workflow_templates": true
+    },
+    "code_quality": {
+      "formatting_configured": true,
+      "gitignore_comprehensive": true,
+      "linting_configured": true,
+      "security_scanning": true,
+      "type_checking": true
     },
     "development": {
       "devcontainer_configured": true,
+      "editorconfig_present": true,
       "env_example_present": true,
       "ide_settings_configured": true,
-      "pre_commit_hooks": true,
-      "editorconfig_present": true
-    },
-    "code_quality": {
-      "linting_configured": true,
-      "formatting_configured": true,
-      "type_checking": true,
-      "gitignore_comprehensive": true,
-      "security_scanning": true
-    },
-    "testing": {
-      "unit_tests_present": true,
-      "integration_tests_present": true,
-      "e2e_tests_configured": true,
-      "performance_tests_present": true,
-      "security_tests_present": true,
-      "coverage_reporting": true,
-      "test_documentation": true
-    },
-    "build_packaging": {
-      "dockerfile_present": true,
-      "docker_compose_present": true,
-      "semantic_release_configured": true,
-      "dockerignore_present": true,
-      "multi_stage_builds": true,
-      "build_automation": true
-    },
-    "cicd": {
-      "workflow_documentation": true,
-      "workflow_templates": true,
-      "security_scanning_templates": true,
-      "deployment_templates": true,
-      "matrix_testing_templates": true,
-      "issue_templates": true,
-      "pr_templates": true
-    },
-    "monitoring": {
-      "prometheus_configured": true,
-      "grafana_configured": true,
-      "alert_rules_configured": true,
-      "runbooks_present": true,
-      "health_endpoints_documented": true,
-      "monitoring_guide": true
-    },
-    "security": {
-      "sast_scanning": true,
-      "dependency_scanning": true,
-      "container_scanning": true,
-      "secrets_scanning": true,
-      "sbom_generation": true,
-      "security_documentation": true,
-      "vulnerability_reporting": true
+      "pre_commit_hooks": true
     },
     "documentation": {
       "api_docs": true,
-      "user_guides": true,
+      "architecture_docs": true,
+      "deployment_guide": true,
       "development_guide": true,
+      "monitoring_guide": true,
       "operations_manual": true,
       "testing_guide": true,
-      "deployment_guide": true,
+      "user_guides": true
+    },
+    "monitoring": {
+      "alert_rules_configured": true,
+      "grafana_configured": true,
+      "health_endpoints_documented": true,
       "monitoring_guide": true,
-      "architecture_docs": true
+      "prometheus_configured": true,
+      "runbooks_present": true
+    },
+    "planning": {
+      "adr_structure": true,
+      "architecture_documented": true,
+      "project_charter": true,
+      "requirements_documented": true,
+      "roadmap_updated": true
+    },
+    "security": {
+      "container_scanning": true,
+      "dependency_scanning": true,
+      "sast_scanning": true,
+      "sbom_generation": true,
+      "secrets_scanning": true,
+      "security_documentation": true,
+      "vulnerability_reporting": true
+    },
+    "testing": {
+      "coverage_reporting": true,
+      "e2e_tests_configured": true,
+      "integration_tests_present": true,
+      "performance_tests_present": true,
+      "security_tests_present": true,
+      "test_documentation": true,
+      "unit_tests_present": true
     }
   },
-  "quality_gates": {
-    "code_coverage_minimum": 80,
-    "security_scan_passing": true,
-    "performance_benchmarks": true,
-    "documentation_coverage": 100,
-    "accessibility_compliance": true
+  "project": {
+    "ai_framework": "CrewAI",
+    "created": "2025-07-01",
+    "description": "A comprehensive boilerplate for building agentic startups with CrewAI, FastAPI, and React",
+    "framework": "FastAPI",
+    "frontend": "React",
+    "language": "Python",
+    "last_updated": "2025-07-28",
+    "license": "Apache-2.0",
+    "name": "agentic-startup-studio-boilerplate",
+    "version": "0.2.0"
   },
-  "automation_status": {
-    "dependency_updates": "enabled",
-    "security_scanning": "enabled",
-    "performance_monitoring": "enabled",
-    "backup_verification": "enabled",
-    "metrics_collection": "enabled",
-    "alert_management": "enabled"
+  "quality_gates": {
+    "accessibility_compliance": true,
+    "code_coverage_minimum": 80,
+    "documentation_coverage": 100,
+    "performance_benchmarks": true,
+    "security_scan_passing": true
+  },
+  "sdlc_completeness": 95,
+  "security_metrics": {
+    "security_files": {
+      "bandit_config": true,
+      "pre_commit_config": true,
+      "safety_config": false,
+      "security_md": true
+    },
+    "vulnerabilities": {}
+  },
+  "security_score": 88,
+  "test_coverage": 85,
+  "test_metrics": {
+    "coverage": {
+      "coverage_percentage": "unknown"
+    },
+    "test_files": {
+      "e2e_tests": 1,
+      "integration_tests": 1,
+      "performance_tests": 1,
+      "total_tests": 13,
+      "unit_tests": 10
+    }
   }
 }
