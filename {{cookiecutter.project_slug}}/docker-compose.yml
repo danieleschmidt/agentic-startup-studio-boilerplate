@@ -1,0 +1,183 @@
+version: '3.8'
+
+services:
+  # Backend API service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - SECRET_KEY=your-secret-key-change-in-production
+      - DATABASE_URL=postgresql://{{cookiecutter.project_slug}}_user:{{cookiecutter.project_slug}}_password@postgres:5432/{{cookiecutter.project_slug}}_db
+      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - {{cookiecutter.project_slug}}_network
+
+  # Frontend React service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000/api/v1
+      - REACT_APP_ENVIRONMENT=development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+    networks:
+      - {{cookiecutter.project_slug}}_network
+    depends_on:
+      - backend
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER={{cookiecutter.project_slug}}_user
+      - POSTGRES_PASSWORD={{cookiecutter.project_slug}}_password
+      - POSTGRES_DB={{cookiecutter.project_slug}}_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - {{cookiecutter.project_slug}}_network
+
+  # Redis cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - {{cookiecutter.project_slug}}_network
+
+  # Nginx reverse proxy (optional, for production-like setup)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - {{cookiecutter.project_slug}}_network
+    profiles:
+      - production
+
+{% if cookiecutter.include_keycloak_auth == "yes" %}
+  # Keycloak authentication server
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://postgres:5432/{{cookiecutter.project_slug}}_db
+      - KC_DB_USERNAME={{cookiecutter.project_slug}}_user
+      - KC_DB_PASSWORD={{cookiecutter.project_slug}}_password
+      - KC_HOSTNAME=localhost
+    command: start-dev
+    depends_on:
+      - postgres
+    networks:
+      - {{cookiecutter.project_slug}}_network
+    profiles:
+      - auth
+{% endif %}
+
+  # Monitoring services (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - {{cookiecutter.project_slug}}_network
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    networks:
+      - {{cookiecutter.project_slug}}_network
+    profiles:
+      - monitoring
+
+  # Development tools
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - {{cookiecutter.project_slug}}_network
+    profiles:
+      - development
+
+  # Database administration
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@{{cookiecutter.project_slug}}.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - {{cookiecutter.project_slug}}_network
+    profiles:
+      - development
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+  pgadmin_data:
+
+networks:
+  {{cookiecutter.project_slug}}_network:
+    driver: bridge
