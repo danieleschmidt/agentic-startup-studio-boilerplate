@@ -1,16 +1,31 @@
-# Production dependencies for the Agentic Startup Studio Boilerplate
+# Production dependencies for the Quantum Task Planner
 
 # Web Framework
 fastapi==0.108.0
 uvicorn[standard]==0.25.0
 starlette==0.32.0
 
-# AI & Agent Framework
+# Quantum Computing & Scientific Computing
+numpy==1.26.2
+scipy==1.11.4
+qiskit==0.45.3
+qiskit-aer==0.13.3
+matplotlib==3.8.2
+
+# AI & Agent Framework (Optional - from original boilerplate)
 crewai==0.14.0
 openai==1.7.2
 anthropic==0.8.1
 langchain==0.1.0
 langchain-community==0.0.10
+
+# CLI Framework
+click==8.1.7
+rich==13.7.0
+
+# Async Support
+asyncio-mqtt==0.16.1
+aiofiles==23.2.1
 
 # Database
 sqlalchemy==2.0.25
