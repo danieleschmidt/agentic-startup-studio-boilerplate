@@ -1,20 +1,18 @@
-# Development Docker Compose configuration
+# Quantum Task Planner - Development Docker Compose configuration
 # Use this for local development with hot-reload and debugging
 
 version: '3.8'
 
 services:
   # =============================================================================
-  # Development Container (DevContainer support)
+  # Quantum Task Planner Development Container
   # =============================================================================
-  devcontainer:
+  quantum-dev:
     build:
       context: .
       dockerfile: Dockerfile
       target: development
-      args:
-        BUILD_ENV: development
-    container_name: agentic-startup-devcontainer
+    container_name: quantum-task-planner-dev
     ports:
       - "8000:8000"  # FastAPI
       - "3000:3000"  # React dev server

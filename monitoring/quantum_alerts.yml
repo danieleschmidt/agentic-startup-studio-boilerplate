@@ -1,0 +1,266 @@
+# Quantum Task Planner Alert Rules
+groups:
+  - name: quantum_api
+    rules:
+      # API Health Alerts
+      - alert: QuantumAPIDown
+        expr: up{job="quantum-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: quantum-api
+        annotations:
+          summary: "Quantum API instance is down"
+          description: "Quantum API instance {{ $labels.instance }} has been down for more than 1 minute."
+          runbook_url: "https://runbooks.quantum-tasks.com/api-down"
+
+      - alert: QuantumAPIHighErrorRate
+        expr: (rate(http_requests_total{job="quantum-api",code=~"5.."}[5m]) / rate(http_requests_total{job="quantum-api"}[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: quantum-api
+        annotations:
+          summary: "High error rate on Quantum API"
+          description: "Error rate is {{ $value | humanizePercentage }} on instance {{ $labels.instance }}"
+
+      - alert: QuantumAPIHighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="quantum-api"}[5m])) > 2
+        for: 10m
+        labels:
+          severity: warning
+          service: quantum-api
+        annotations:
+          summary: "High latency on Quantum API"
+          description: "95th percentile latency is {{ $value }}s on instance {{ $labels.instance }}"
+
+  - name: quantum_tasks
+    rules:
+      # Quantum Task System Alerts
+      - alert: QuantumCoherenceLow
+        expr: quantum_average_coherence < 0.3
+        for: 15m
+        labels:
+          severity: warning
+          component: quantum-engine
+        annotations:
+          summary: "Low quantum coherence detected"
+          description: "Average quantum coherence is {{ $value }}, indicating system degradation."
+
+      - alert: QuantumCoherenceCritical
+        expr: quantum_average_coherence < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          component: quantum-engine
+        annotations:
+          summary: "Critical quantum coherence level"
+          description: "Average quantum coherence is {{ $value }}, system may be unstable."
+
+      - alert: HighTaskBacklog
+        expr: quantum_tasks_pending > 1000
+        for: 10m
+        labels:
+          severity: warning
+          component: scheduler
+        annotations:
+          summary: "High number of pending tasks"
+          description: "{{ $value }} tasks are pending, indicating potential bottleneck."
+
+      - alert: TaskProcessingStalled
+        expr: rate(quantum_tasks_completed_total[10m]) == 0 and quantum_tasks_pending > 0
+        for: 15m
+        labels:
+          severity: critical
+          component: scheduler
+        annotations:
+          summary: "Task processing appears stalled"
+          description: "No tasks completed in 10 minutes despite pending tasks."
+
+      - alert: EntanglementBondsExcessive
+        expr: quantum_entanglement_bonds_active > 10000
+        for: 30m
+        labels:
+          severity: warning
+          component: entanglement-manager
+        annotations:
+          summary: "Excessive quantum entanglement bonds"
+          description: "{{ $value }} active entanglement bonds may impact performance."
+
+  - name: system_resources
+    rules:
+      # System Resource Alerts
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total{job="quantum-api"}[1m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}% on instance {{ $labels.instance }}"
+
+      - alert: HighMemoryUsage
+        expr: (process_resident_memory_bytes{job="quantum-api"} / (1024*1024*1024)) > 3
+        for: 10m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}GB on instance {{ $labels.instance }}"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is {{ $value | humanizePercentage }} full on {{ $labels.device }}"
+
+  - name: database
+    rules:
+      # Database Alerts
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL instance {{ $labels.instance }} is down."
+
+      - alert: PostgreSQLTooManyConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "PostgreSQL has too many connections"
+          description: "PostgreSQL connection usage is {{ $value | humanizePercentage }}"
+
+      - alert: PostgreSQLHighReplicationLag
+        expr: pg_replication_lag > 30
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "High PostgreSQL replication lag"
+          description: "Replication lag is {{ $value }} seconds"
+
+  - name: cache
+    rules:
+      # Redis Cache Alerts
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: cache
+        annotations:
+          summary: "Redis is down"
+          description: "Redis instance {{ $labels.instance }} is down."
+
+      - alert: RedisHighMemoryUsage
+        expr: (redis_memory_used_bytes / redis_memory_max_bytes) > 0.9
+        for: 10m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Redis high memory usage"
+          description: "Redis memory usage is {{ $value | humanizePercentage }}"
+
+      - alert: RedisCacheHitRateLow
+        expr: (rate(redis_keyspace_hits_total[5m]) / (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m]))) < 0.8
+        for: 15m
+        labels:
+          severity: warning
+          component: cache
+        annotations:
+          summary: "Low Redis cache hit rate"
+          description: "Cache hit rate is {{ $value | humanizePercentage }}"
+
+  - name: load_balancer
+    rules:
+      # Load Balancer Alerts
+      - alert: NginxDown
+        expr: nginx_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: load-balancer
+        annotations:
+          summary: "Nginx is down"
+          description: "Nginx instance {{ $labels.instance }} is down."
+
+      - alert: NginxHighErrorRate
+        expr: (rate(nginx_http_requests_total{status=~"4..|5.."}[5m]) / rate(nginx_http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: load-balancer
+        annotations:
+          summary: "High error rate in Nginx"
+          description: "Error rate is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+
+  - name: security
+    rules:
+      # Security Alerts
+      - alert: UnusuallyHighRequestRate
+        expr: rate(http_requests_total{job="quantum-api"}[1m]) > 1000
+        for: 2m
+        labels:
+          severity: warning
+          component: security
+        annotations:
+          summary: "Unusually high request rate"
+          description: "Request rate is {{ $value }} requests/second, possible DDoS attack."
+
+      - alert: HighFailedAuthenticationRate
+        expr: rate(authentication_failures_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: security
+        annotations:
+          summary: "High authentication failure rate"
+          description: "{{ $value }} authentication failures per second, possible brute force attack."
+
+      - alert: CircuitBreakerOpen
+        expr: circuit_breaker_state{state="open"} > 0
+        for: 1m
+        labels:
+          severity: warning
+          component: circuit-breaker
+        annotations:
+          summary: "Circuit breaker is open"
+          description: "Circuit breaker {{ $labels.circuit_breaker }} is open, blocking requests."
+
+  - name: business_metrics
+    rules:
+      # Business Logic Alerts
+      - alert: OptimizationPerformanceDegradation
+        expr: quantum_optimization_improvement_rate < 0.1
+        for: 30m
+        labels:
+          severity: warning
+          component: optimization
+        annotations:
+          summary: "Optimization performance degraded"
+          description: "Optimization improvement rate is {{ $value }}, indicating algorithmic issues."
+
+      - alert: SchedulingEfficiencyLow
+        expr: quantum_scheduling_efficiency < 0.7
+        for: 20m
+        labels:
+          severity: warning
+          component: scheduler
+        annotations:
+          summary: "Scheduling efficiency is low"
+          description: "Scheduling efficiency is {{ $value }}, may need algorithm tuning."

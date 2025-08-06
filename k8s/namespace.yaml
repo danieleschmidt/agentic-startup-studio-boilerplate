@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: quantum-tasks
+  labels:
+    name: quantum-tasks
+    environment: production
+    app.kubernetes.io/name: quantum-task-planner
+    app.kubernetes.io/version: "2.0.0"
