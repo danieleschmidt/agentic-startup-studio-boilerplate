@@ -1,17 +1,18 @@
 """
 Quantum Task Planner API
 
-FastAPI-based REST API for quantum task planning with real-time
-quantum state monitoring, entanglement management, and optimization endpoints.
+Production-ready FastAPI application with comprehensive middleware,
+security, monitoring, health checks, and distributed quantum capabilities.
 """
 
 import asyncio
+import uuid
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Request, Response
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 import uvicorn
 
@@ -19,6 +20,18 @@ from ..core.quantum_task import QuantumTask, TaskState, TaskPriority
 from ..core.quantum_scheduler import QuantumTaskScheduler
 from ..core.quantum_optimizer import QuantumProbabilityOptimizer
 from ..core.entanglement_manager import TaskEntanglementManager, EntanglementType
+
+from ..utils.middleware import setup_middleware
+from ..utils.security import SecurityConfig, create_default_security_config
+from ..utils.health_checks import (
+    get_health_manager, setup_default_health_checks,
+    SystemResourcesHealthCheck, QuantumCoherenceHealthCheck
+)
+from ..utils.logging import setup_logging, get_logger
+from ..performance.cache import get_cache, cached_quantum
+from ..performance.concurrent import get_worker_pool
+from ..performance.scaling import get_load_balancer, get_auto_scaler
+from ..distributed.quantum_sync import get_quantum_coordinator
 
 
 # Pydantic models for API
@@ -59,43 +72,103 @@ class QuantumMeasurementRequest(BaseModel):
     observer_effect: float = Field(default=0.1, ge=0.0, le=1.0)
 
 
-# Global instances
+# Global instances - Enhanced with distributed capabilities
 scheduler = QuantumTaskScheduler()
 optimizer = QuantumProbabilityOptimizer()
 entanglement_manager = TaskEntanglementManager()
 
+# Enhanced system components
+logger = None
+health_manager = None
+load_balancer = None
+auto_scaler = None
+quantum_coordinator = None
+middleware_instances = None
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Manage application lifespan with background tasks"""
-    # Start background decoherence process
-    decoherence_task = asyncio.create_task(background_decoherence())
+    """Enhanced application lifespan management with full system initialization"""
+    global logger, health_manager, load_balancer, auto_scaler, quantum_coordinator, middleware_instances
+    
+    # Startup
+    print("🚀 Starting Quantum Task Planner API...")
+    
+    # Initialize logging
+    logger = setup_logging("INFO")
+    logger.logger.info("Logging system initialized")
+    
+    # Setup health checks
+    health_manager = setup_default_health_checks(
+        scheduler=scheduler,
+        database_url="postgresql://localhost/quantum_tasks", 
+        redis_url="redis://localhost:6379"
+    )
+    logger.logger.info("Health monitoring system initialized")
+    
+    # Initialize scaling components
+    load_balancer = get_load_balancer(coherence_weight=0.3)
+    auto_scaler = get_auto_scaler(check_interval=30.0)
+    logger.logger.info("Auto-scaling system initialized")
+    
+    # Initialize distributed coordination
+    quantum_coordinator = get_quantum_coordinator(f"api_node_{uuid.uuid4().hex[:8]}")
+    await quantum_coordinator.join_cluster()
+    logger.logger.info("Distributed quantum coordination initialized")
+    
+    # Start background tasks
+    background_tasks = [
+        asyncio.create_task(background_decoherence()),
+        asyncio.create_task(background_optimization()),
+        asyncio.create_task(background_health_monitoring()),
+        asyncio.create_task(background_metrics_collection())
+    ]
+    
+    logger.logger.info("✅ Quantum Task Planner API startup complete")
     
     try:
         yield
     finally:
-        # Clean shutdown
-        decoherence_task.cancel()
-        try:
-            await decoherence_task
-        except asyncio.CancelledError:
-            pass
+        # Shutdown
+        print("🛑 Shutting down Quantum Task Planner API...")
+        logger.logger.info("Beginning graceful shutdown")
+        
+        # Cancel background tasks
+        for task in background_tasks:
+            task.cancel()
+        
+        # Wait for tasks to complete
+        await asyncio.gather(*background_tasks, return_exceptions=True)
+        
+        # Shutdown scaling systems  
+        if auto_scaler:
+            auto_scaler.stop_monitoring()
+        
+        # Shutdown health monitoring
+        if health_manager:
+            health_manager.stop_monitoring()
+        
+        logger.logger.info("✅ Quantum Task Planner API shutdown complete")
 
 
+# Enhanced FastAPI app with production configuration
 app = FastAPI(
     title="Quantum Task Planner API",
-    description="Advanced quantum-inspired task planning and optimization system",
-    version="1.0.0",
+    description="Production-ready quantum-inspired task planning and optimization system with distributed capabilities",
+    version="2.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
     lifespan=lifespan
 )
 
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+# Setup comprehensive middleware stack
+security_config = create_default_security_config()
+middleware_instances = setup_middleware(
+    app,
+    security_config=security_config,
+    enable_quantum_middleware=True,
+    enable_monitoring=True
 )
 
 
@@ -108,8 +181,73 @@ async def background_decoherence():
         except asyncio.CancelledError:
             break
         except Exception as e:
-            print(f"Decoherence error: {e}")
+            if logger:
+                logger.logger.error(f"Decoherence error: {e}")
             await asyncio.sleep(60)
+
+
+async def background_optimization():
+    """Background optimization task"""
+    while True:
+        try:
+            # Run optimization every 5 minutes
+            if scheduler.tasks:
+                task_ids = list(scheduler.tasks.keys())[:10]  # Optimize up to 10 tasks
+                result = await optimizer.optimize_async(task_ids)
+                if logger:
+                    logger.logger.info(f"Background optimization completed: {result.get('improvement', 0):.2%} improvement")
+            await asyncio.sleep(300)
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            if logger:
+                logger.logger.error(f"Background optimization error: {e}")
+            await asyncio.sleep(300)
+
+
+async def background_health_monitoring():
+    """Background health monitoring task"""
+    while True:
+        try:
+            if health_manager:
+                health_results = await health_manager.check_all_health()
+                unhealthy_checks = [name for name, result in health_results.items() 
+                                  if result.status.value in ['unhealthy', 'critical']]
+                if unhealthy_checks and logger:
+                    logger.logger.warning(f"Unhealthy checks: {unhealthy_checks}")
+            await asyncio.sleep(60)
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            if logger:
+                logger.logger.error(f"Health monitoring error: {e}")
+            await asyncio.sleep(60)
+
+
+async def background_metrics_collection():
+    """Background metrics collection task"""
+    while True:
+        try:
+            # Collect and log system metrics
+            if logger and scheduler:
+                task_count = len(scheduler.tasks)
+                active_tasks = len([t for t in scheduler.tasks.values() if t.state in [TaskState.RUNNING, TaskState.IN_PROGRESS]])
+                avg_coherence = sum(t.quantum_coherence for t in scheduler.tasks.values()) / max(1, task_count)
+                
+                logger.logger.info(
+                    "system_metrics",
+                    total_tasks=task_count,
+                    active_tasks=active_tasks,
+                    average_coherence=avg_coherence
+                )
+            
+            await asyncio.sleep(120)  # Every 2 minutes
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            if logger:
+                logger.logger.error(f"Metrics collection error: {e}")
+            await asyncio.sleep(120)
 
 
 # Task Management Endpoints
@@ -459,19 +597,163 @@ async def get_quantum_system_state():
     }
 
 
+# Enhanced Production Endpoints
+
+@app.get("/api/v1/health", response_model=Dict[str, Any])
+async def health_check():
+    """Comprehensive health check endpoint"""
+    if not health_manager:
+        return {"status": "healthy", "message": "Health manager not initialized"}
+    
+    health_status = health_manager.get_health_status()
+    return {
+        "status": health_status["overall_status"],
+        "timestamp": health_status["timestamp"],
+        "checks": health_status["health_checks"],
+        "circuit_breakers": health_status["circuit_breakers"],
+        "version": "2.0.0"
+    }
+
+
+@app.get("/api/v1/metrics", response_model=Dict[str, Any])
+async def get_system_metrics():
+    """Get comprehensive system metrics"""
+    metrics = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "system": {
+            "total_tasks": len(scheduler.tasks),
+            "active_tasks": len([t for t in scheduler.tasks.values() if t.state in [TaskState.RUNNING, TaskState.IN_PROGRESS]]),
+            "average_coherence": sum(t.quantum_coherence for t in scheduler.tasks.values()) / max(1, len(scheduler.tasks))
+        }
+    }
+    
+    # Add load balancer metrics
+    if load_balancer:
+        metrics["load_balancing"] = load_balancer.get_load_distribution()
+    
+    # Add auto-scaler metrics
+    if auto_scaler:
+        metrics["auto_scaling"] = auto_scaler.get_scaling_status()
+    
+    # Add quantum coordinator metrics
+    if quantum_coordinator:
+        metrics["distributed"] = quantum_coordinator.get_cluster_status()
+    
+    # Add middleware metrics
+    if middleware_instances and "monitoring" in middleware_instances:
+        metrics["monitoring"] = middleware_instances["monitoring"].get_metrics()
+    
+    return {"status": "success", "metrics": metrics}
+
+
+@app.get("/api/v1/performance", response_model=Dict[str, Any])
+@cached_quantum(cache_name="performance", ttl=60)  # Cache for 1 minute
+async def get_performance_metrics():
+    """Get performance and optimization metrics"""
+    return {
+        "status": "success",
+        "performance": {
+            "cache_stats": get_cache("default").get_stats(),
+            "worker_pool_stats": get_worker_pool().get_pool_stats(),
+            "optimization_history": optimizer.get_optimization_history()
+        }
+    }
+
+
+@app.post("/api/v1/scale", response_model=Dict[str, Any])
+async def trigger_scaling(action: str, amount: int = 1):
+    """Manually trigger scaling action"""
+    if not auto_scaler:
+        raise HTTPException(status_code=503, detail="Auto-scaler not available")
+    
+    if action == "up":
+        await auto_scaler._scale_up(amount)
+    elif action == "down": 
+        await auto_scaler._scale_down(amount)
+    else:
+        raise HTTPException(status_code=400, detail="Invalid action. Use 'up' or 'down'")
+    
+    return {
+        "status": "success",
+        "action": action,
+        "amount": amount,
+        "new_instance_count": auto_scaler.current_instances
+    }
+
+
+@app.post("/api/v1/distributed/sync", response_model=Dict[str, Any])
+async def sync_quantum_states():
+    """Trigger distributed quantum state synchronization"""
+    if not quantum_coordinator:
+        raise HTTPException(status_code=503, detail="Quantum coordinator not available")
+    
+    # Trigger synchronization across all nodes
+    sync_results = []
+    for task_id, task in scheduler.tasks.items():
+        quantum_coordinator.state_tracker.update_local_state(
+            task_id=task_id,
+            quantum_coherence=task.quantum_coherence,
+            state_probabilities=task.state_probabilities,
+            entanglement_bonds=task.entanglement_bonds or []
+        )
+        sync_results.append(task_id)
+    
+    return {
+        "status": "success",
+        "synchronized_tasks": len(sync_results),
+        "cluster_status": quantum_coordinator.get_cluster_status()
+    }
+
+
+@app.post("/api/v1/cache/clear", response_model=Dict[str, Any])
+async def clear_caches(cache_name: Optional[str] = None):
+    """Clear system caches"""
+    if cache_name:
+        cache = get_cache(cache_name)
+        cache.clear()
+        return {"status": "success", "cleared_cache": cache_name}
+    else:
+        # Clear all caches
+        from ..performance.cache import _cache_manager
+        _cache_manager.clear_all()
+        return {"status": "success", "cleared_cache": "all"}
+
+
 class QuantumPlannerAPI:
-    """Main API class for external integrations"""
+    """Enhanced main API class for external integrations"""
     
     def __init__(self):
         self.app = app
         self.scheduler = scheduler
         self.optimizer = optimizer
         self.entanglement_manager = entanglement_manager
+        self.health_manager = health_manager
+        self.load_balancer = load_balancer
+        self.auto_scaler = auto_scaler
+        self.quantum_coordinator = quantum_coordinator
     
     def run(self, host: str = "0.0.0.0", port: int = 8000, **kwargs):
-        """Run the API server"""
-        uvicorn.run(self.app, host=host, port=port, **kwargs)
+        """Run the production API server"""
+        uvicorn.run(
+            self.app, 
+            host=host, 
+            port=port,
+            log_level="info",
+            access_log=True,
+            **kwargs
+        )
+    
+    def get_status(self) -> Dict[str, Any]:
+        """Get comprehensive system status"""
+        return {
+            "api_version": "2.0.0",
+            "tasks": len(self.scheduler.tasks),
+            "health": "healthy" if health_manager and health_manager.is_healthy() else "degraded",
+            "distributed": bool(quantum_coordinator),
+            "auto_scaling": bool(auto_scaler),
+            "load_balancing": bool(load_balancer)
+        }
 
 
-# Export main API instance
+# Export enhanced API instance
 quantum_api = QuantumPlannerAPI()

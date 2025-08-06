@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for Agentic Startup Studio
+# Multi-stage Dockerfile for Quantum Task Planner
 # Optimized for production with security scanning and minimal attack surface
 
 # =============================================================================
@@ -7,55 +7,47 @@
 FROM python:3.11-slim as python-builder
 
 # Security: Create non-root user
-RUN groupadd --gid 1000 appuser && \
-    useradd --uid 1000 --gid appuser --shell /bin/bash --create-home appuser
+RUN groupadd --gid 1000 quantum && \
+    useradd --uid 1000 --gid quantum --shell /bin/bash --create-home quantum
 
 # Set work directory
 WORKDIR /app
 
-# Install system dependencies for building Python packages
+# Install system dependencies for building Python packages including quantum computing libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     git \
+    gcc \
+    g++ \
+    libopenblas-dev \
+    liblapack-dev \
+    gfortran \
+    postgresql-client \
+    redis-tools \
     && rm -rf /var/lib/apt/lists/*
 
 # Upgrade pip and install build tools
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
 # Copy requirements files
-COPY requirements.txt requirements-dev.txt ./
+COPY requirements.txt ./
 
-# Install Python dependencies
+# Install Python dependencies for quantum computing
 RUN pip install --no-cache-dir --user -r requirements.txt
 
-# Install development dependencies only in development
-ARG BUILD_ENV=production
-RUN if [ "$BUILD_ENV" = "development" ]; then \
-    pip install --no-cache-dir --user -r requirements-dev.txt; \
-    fi
+# Install additional quantum computing dependencies
+RUN pip install --no-cache-dir --user \
+    uvicorn[standard] \
+    gunicorn \
+    psycopg2-binary \
+    redis \
+    prometheus-client \
+    structlog
 
 # =============================================================================
-# Build stage for Node.js dependencies (for frontend)
+# Skip Node.js stage - Quantum Task Planner is API-only
 # =============================================================================
-FROM node:18-alpine as node-builder
-
-# Set work directory
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-COPY frontend/package*.json ./frontend/
-
-# Install dependencies
-RUN npm ci --only=production && \
-    cd frontend && npm ci --only=production
-
-# Copy frontend source
-COPY frontend/ ./frontend/
-
-# Build frontend
-RUN cd frontend && npm run build
 
 # =============================================================================
 # Production runtime stage
@@ -67,44 +59,46 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     dumb-init \
+    postgresql-client \
+    redis-tools \
     && apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
 # Security: Create non-root user
-RUN groupadd --gid 1000 appuser && \
-    useradd --uid 1000 --gid appuser --shell /bin/bash --create-home appuser
+RUN groupadd --gid 1000 quantum && \
+    useradd --uid 1000 --gid quantum --shell /bin/bash --create-home quantum
 
 # Set work directory
 WORKDIR /app
 
 # Copy Python dependencies from builder stage
-COPY --from=python-builder /home/appuser/.local /home/appuser/.local
-
-# Copy built frontend from node builder
-COPY --from=node-builder /app/frontend/build ./static/
+COPY --from=python-builder /home/quantum/.local /home/quantum/.local
 
 # Copy application code
-COPY --chown=appuser:appuser . .
+COPY --chown=quantum:quantum . .
 
-# Security: Set proper permissions
-RUN chmod -R 755 /app && \
-    chmod +x /app/docker-entrypoint.sh
+# Create necessary directories and set permissions
+RUN mkdir -p /app/logs /app/cache /app/data && \
+    chown -R quantum:quantum /app && \
+    chmod -R 755 /app
 
 # Set environment variables
 ENV PYTHONPATH=/app \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PATH="/home/appuser/.local/bin:$PATH" \
-    USER=appuser \
-    HOME=/home/appuser
+    PATH="/home/quantum/.local/bin:$PATH" \
+    USER=quantum \
+    HOME=/home/quantum \
+    QUANTUM_ENV=production \
+    PORT=8000
 
-# Health check
+# Health check for Quantum Task Planner API
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD curl -f http://localhost:8000/api/v1/health || exit 1
 
 # Security: Switch to non-root user
-USER appuser
+USER quantum
 
 # Expose port
 EXPOSE 8000
@@ -112,8 +106,8 @@ EXPOSE 8000
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 
-# Default command
-CMD ["./docker-entrypoint.sh"]
+# Default command for Quantum Task Planner
+CMD ["python", "-m", "uvicorn", "quantum_task_planner.api.quantum_api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
 
 # =============================================================================
 # Development stage
@@ -131,24 +125,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     procps \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy development dependencies from builder
-COPY --from=python-builder /home/appuser/.local /home/appuser/.local
-
-# Install additional development tools
+# Install additional development tools for quantum development
 RUN pip install --no-cache-dir \
     jupyter \
     ipython \
-    debugpy
+    debugpy \
+    pytest \
+    pytest-cov \
+    pytest-asyncio \
+    black \
+    flake8 \
+    mypy
 
 # Create development directories
-RUN mkdir -p /app/logs /app/uploads /app/tmp && \
-    chown -R appuser:appuser /app
+RUN mkdir -p /app/logs /app/cache /app/data /app/tmp && \
+    chown -R quantum:quantum /app
 
-# Switch back to appuser
-USER appuser
+# Switch back to quantum user
+USER quantum
 
-# Override command for development
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]
+# Override command for development with hot reload
+CMD ["python", "-m", "uvicorn", "quantum_task_planner.api.quantum_api:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]
 
 # =============================================================================
 # Testing stage
@@ -157,23 +154,23 @@ FROM development as testing
 
 USER root
 
-# Install testing tools
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    chromium \
-    chromium-driver \
-    && rm -rf /var/lib/apt/lists/*
+# Install additional testing dependencies for quantum testing
+RUN pip install --no-cache-dir \
+    httpx \
+    pytest-benchmark \
+    pytest-mock \
+    coverage[toml]
 
-# Install Playwright browsers
-USER appuser
-RUN playwright install --with-deps chromium
+USER quantum
 
-# Set testing environment variables
+# Set testing environment variables for quantum testing
 ENV TESTING=true \
+    QUANTUM_TEST_MODE=true \
     PYTEST_ADDOPTS="--tb=short --strict-markers" \
     COVERAGE_PROCESS_START=.coveragerc
 
-# Command for running tests
-CMD ["python", "-m", "pytest", "--cov=.", "--cov-report=html", "--cov-report=term", "-v"]
+# Command for running quantum task planner tests
+CMD ["python", "-m", "pytest", "tests/", "--cov=quantum_task_planner", "--cov-report=html", "--cov-report=term", "--cov-report=xml", "-v"]
 
 # =============================================================================
 # Security scanning stage
@@ -197,17 +194,21 @@ RUN bandit -r . -f json -o bandit-report.json || true && \
 # =============================================================================
 # Metadata and labels
 # =============================================================================
-LABEL maintainer="Daniel Schmidt <daniel@terragon.ai>" \
-      version="0.2.0" \
-      description="Agentic Startup Studio Boilerplate" \
-      org.opencontainers.image.title="agentic-startup-studio" \
-      org.opencontainers.image.description="A comprehensive boilerplate for building agentic startups" \
-      org.opencontainers.image.version="0.2.0" \
-      org.opencontainers.image.authors="Daniel Schmidt <daniel@terragon.ai>" \
-      org.opencontainers.image.url="https://github.com/danieleschmidt/agentic-startup-studio-boilerplate" \
-      org.opencontainers.image.source="https://github.com/danieleschmidt/agentic-startup-studio-boilerplate" \
+LABEL maintainer="Terragon Labs <team@terragon.ai>" \
+      version="2.0.0" \
+      description="Quantum Task Planner - Production-ready quantum-inspired task planning system" \
+      org.opencontainers.image.title="quantum-task-planner" \
+      org.opencontainers.image.description="A production-ready quantum-inspired task planning and optimization system with distributed capabilities" \
+      org.opencontainers.image.version="2.0.0" \
+      org.opencontainers.image.authors="Terragon Labs <team@terragon.ai>" \
       org.opencontainers.image.vendor="Terragon Labs" \
       org.opencontainers.image.licenses="Apache-2.0" \
-      org.opencontainers.image.created="2025-07-27T12:00:00Z" \
+      org.opencontainers.image.created="2025-08-06T00:00:00Z" \
+      quantum.computing="enabled" \
+      quantum.optimization="genetic-algorithms" \
+      quantum.scheduler="annealing" \
+      quantum.entanglement="bell-states" \
       security.scan="enabled" \
-      security.non-root="true"
+      security.non-root="true" \
+      performance.caching="quantum-coherence" \
+      distributed.sync="quantum-state"
