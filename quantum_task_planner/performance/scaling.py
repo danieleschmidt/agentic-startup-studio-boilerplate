@@ -665,6 +665,409 @@ def get_resource_pool(cpu: float = 100.0, memory: float = 32.0, storage: float =
     return _resource_pool
 
 
+class QuantumClusterOrchestrator:
+    """Advanced quantum cluster orchestration with multi-region support"""
+    
+    def __init__(self):
+        self.regions: Dict[str, Dict[str, Any]] = {}
+        self.global_load_balancer = get_load_balancer()
+        self.cluster_topology = {}
+        self.quantum_entanglement_links: Dict[str, List[str]] = {}
+        
+        # Orchestration state
+        self.deployment_queue = asyncio.Queue()
+        self.active_deployments: Dict[str, Dict[str, Any]] = {}
+        self.cluster_health: Dict[str, float] = {}
+        
+        # Performance tracking
+        self.regional_metrics: Dict[str, deque] = defaultdict(lambda: deque(maxlen=100))
+        self.cross_region_latency: Dict[Tuple[str, str], float] = {}
+        
+        self.logger = get_logger()
+    
+    async def register_region(self, region_id: str, region_config: Dict[str, Any]):
+        """Register a new quantum computation region"""
+        self.regions[region_id] = {
+            "config": region_config,
+            "instances": {},
+            "auto_scaler": AutoScaler(),
+            "resource_pool": ResourcePool(
+                region_config.get("cpu", 100.0),
+                region_config.get("memory", 32.0),
+                region_config.get("storage", 1000.0)
+            ),
+            "quantum_coherence_baseline": region_config.get("coherence_baseline", 0.8),
+            "max_instances": region_config.get("max_instances", 20),
+            "min_instances": region_config.get("min_instances", 1),
+            "status": "active"
+        }
+        
+        # Initialize cluster health
+        self.cluster_health[region_id] = 1.0
+        
+        self.logger.info(f"Registered quantum region {region_id}")
+    
+    async def create_quantum_entanglement_link(self, region_a: str, region_b: str, 
+                                             strength: float = 0.8):
+        """Create quantum entanglement link between regions"""
+        if region_a not in self.regions or region_b not in self.regions:
+            raise QuantumTaskPlannerError(f"Invalid regions for entanglement: {region_a}, {region_b}")
+        
+        # Create bidirectional entanglement
+        if region_a not in self.quantum_entanglement_links:
+            self.quantum_entanglement_links[region_a] = []
+        if region_b not in self.quantum_entanglement_links:
+            self.quantum_entanglement_links[region_b] = []
+        
+        # Add entanglement link
+        if region_b not in self.quantum_entanglement_links[region_a]:
+            self.quantum_entanglement_links[region_a].append(region_b)
+        if region_a not in self.quantum_entanglement_links[region_b]:
+            self.quantum_entanglement_links[region_b].append(region_a)
+        
+        # Measure cross-region latency (simulation)
+        latency = np.random.uniform(10, 100)  # 10-100ms
+        self.cross_region_latency[(region_a, region_b)] = latency
+        self.cross_region_latency[(region_b, region_a)] = latency
+        
+        self.logger.info(f"Created quantum entanglement link between {region_a} and {region_b} (strength: {strength})")
+    
+    async def deploy_quantum_cluster(self, region_id: str, cluster_spec: Dict[str, Any]) -> str:
+        """Deploy quantum computing cluster in specified region"""
+        if region_id not in self.regions:
+            raise QuantumTaskPlannerError(f"Region {region_id} not registered")
+        
+        deployment_id = f"deploy_{region_id}_{int(time.time())}"
+        
+        # Queue deployment
+        deployment_task = {
+            "deployment_id": deployment_id,
+            "region_id": region_id,
+            "cluster_spec": cluster_spec,
+            "timestamp": datetime.utcnow(),
+            "status": "queued"
+        }
+        
+        await self.deployment_queue.put(deployment_task)
+        self.active_deployments[deployment_id] = deployment_task
+        
+        # Start deployment processor if not running
+        asyncio.create_task(self._process_deployments())
+        
+        return deployment_id
+    
+    async def _process_deployments(self):
+        """Process pending deployments"""
+        while True:
+            try:
+                if self.deployment_queue.empty():
+                    await asyncio.sleep(1)
+                    continue
+                
+                deployment = await self.deployment_queue.get()
+                await self._execute_deployment(deployment)
+                
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                self.logger.error(f"Deployment processing error: {e}")
+                await asyncio.sleep(5)
+    
+    async def _execute_deployment(self, deployment: Dict[str, Any]):
+        """Execute cluster deployment"""
+        deployment_id = deployment["deployment_id"]
+        region_id = deployment["region_id"]
+        cluster_spec = deployment["cluster_spec"]
+        
+        try:
+            self.active_deployments[deployment_id]["status"] = "deploying"
+            
+            # Get region configuration
+            region = self.regions[region_id]
+            instances_requested = cluster_spec.get("instances", 1)
+            
+            # Check resource availability
+            resource_pool = region["resource_pool"]
+            cpu_per_instance = cluster_spec.get("cpu_per_instance", 2.0)
+            memory_per_instance = cluster_spec.get("memory_per_instance", 4.0)
+            storage_per_instance = cluster_spec.get("storage_per_instance", 100.0)
+            
+            # Reserve resources
+            reservation_id = f"cluster_{deployment_id}"
+            total_cpu = instances_requested * cpu_per_instance
+            total_memory = instances_requested * memory_per_instance
+            total_storage = instances_requested * storage_per_instance
+            
+            if not resource_pool.reserve_resources(
+                reservation_id, total_cpu, total_memory, total_storage,
+                cluster_spec.get("quantum_coherence", 0.8)
+            ):
+                raise QuantumTaskPlannerError(f"Insufficient resources in region {region_id}")
+            
+            # Deploy instances
+            deployed_instances = []
+            for i in range(instances_requested):
+                instance_id = f"{deployment_id}_instance_{i}"
+                
+                # Simulate deployment time
+                await asyncio.sleep(np.random.uniform(2, 5))
+                
+                # Create instance configuration
+                instance_config = {
+                    "instance_id": instance_id,
+                    "region_id": region_id,
+                    "cpu": cpu_per_instance,
+                    "memory": memory_per_instance,
+                    "storage": storage_per_instance,
+                    "quantum_coherence": cluster_spec.get("quantum_coherence", 0.8),
+                    "deployed_at": datetime.utcnow(),
+                    "status": "running",
+                    "endpoint": f"qnode-{instance_id}.{region_id}.quantum.local"
+                }
+                
+                deployed_instances.append(instance_config)
+                region["instances"][instance_id] = instance_config
+                
+                # Register with load balancer
+                self.global_load_balancer.register_worker(
+                    instance_id,
+                    instance_config["endpoint"],
+                    instance_config["quantum_coherence"]
+                )
+                
+                self.logger.info(f"Deployed quantum instance {instance_id} in region {region_id}")
+            
+            # Update deployment status
+            self.active_deployments[deployment_id].update({
+                "status": "completed",
+                "deployed_instances": deployed_instances,
+                "completed_at": datetime.utcnow()
+            })
+            
+            self.logger.info(f"Successfully deployed cluster {deployment_id} with {len(deployed_instances)} instances")
+            
+        except Exception as e:
+            self.active_deployments[deployment_id]["status"] = "failed"
+            self.active_deployments[deployment_id]["error"] = str(e)
+            self.logger.error(f"Failed to deploy cluster {deployment_id}: {e}")
+    
+    async def scale_cluster_globally(self, target_coherence: float = 0.8, 
+                                   load_threshold: float = 0.7) -> Dict[str, Any]:
+        """Intelligent global cluster scaling based on quantum metrics"""
+        scaling_actions = []
+        
+        for region_id, region in self.regions.items():
+            if region["status"] != "active":
+                continue
+            
+            # Analyze regional metrics
+            current_load = await self._calculate_regional_load(region_id)
+            coherence_level = await self._get_regional_coherence(region_id)
+            
+            # Determine scaling need
+            scale_decision = None
+            
+            if current_load > load_threshold and coherence_level > target_coherence:
+                # High load, good coherence - scale up
+                scale_up_amount = max(1, int((current_load - load_threshold) * 10))
+                scale_decision = {
+                    "region_id": region_id,
+                    "action": "scale_up",
+                    "amount": scale_up_amount,
+                    "reason": f"high_load_{current_load:.2f}_good_coherence_{coherence_level:.2f}"
+                }
+            
+            elif current_load < load_threshold * 0.5 and len(region["instances"]) > region["min_instances"]:
+                # Low load - scale down
+                scale_down_amount = max(1, min(2, len(region["instances"]) - region["min_instances"]))
+                scale_decision = {
+                    "region_id": region_id,
+                    "action": "scale_down", 
+                    "amount": scale_down_amount,
+                    "reason": f"low_load_{current_load:.2f}"
+                }
+            
+            elif coherence_level < target_coherence * 0.8:
+                # Low coherence - redistribute load
+                scale_decision = {
+                    "region_id": region_id,
+                    "action": "redistribute",
+                    "reason": f"low_coherence_{coherence_level:.2f}"
+                }
+            
+            if scale_decision:
+                scaling_actions.append(scale_decision)
+                await self._execute_scaling_action(scale_decision)
+        
+        return {
+            "total_actions": len(scaling_actions),
+            "scaling_actions": scaling_actions,
+            "timestamp": datetime.utcnow(),
+            "global_coherence": await self._calculate_global_coherence()
+        }
+    
+    async def _calculate_regional_load(self, region_id: str) -> float:
+        """Calculate current load for a region"""
+        region = self.regions[region_id]
+        
+        if not region["instances"]:
+            return 0.0
+        
+        # Simulate load calculation
+        total_capacity = len(region["instances"]) * 100  # Each instance can handle 100 units
+        current_utilization = np.random.uniform(20, 80) * len(region["instances"])
+        
+        return current_utilization / total_capacity
+    
+    async def _get_regional_coherence(self, region_id: str) -> float:
+        """Get average quantum coherence for region"""
+        region = self.regions[region_id]
+        
+        if not region["instances"]:
+            return region["quantum_coherence_baseline"]
+        
+        # Calculate weighted average coherence
+        coherence_values = [inst["quantum_coherence"] for inst in region["instances"].values()]
+        return np.mean(coherence_values)
+    
+    async def _calculate_global_coherence(self) -> float:
+        """Calculate global quantum coherence across all regions"""
+        all_coherence_values = []
+        
+        for region_id in self.regions:
+            coherence = await self._get_regional_coherence(region_id)
+            all_coherence_values.append(coherence)
+        
+        return np.mean(all_coherence_values) if all_coherence_values else 0.0
+    
+    async def _execute_scaling_action(self, action: Dict[str, Any]):
+        """Execute a scaling action"""
+        region_id = action["region_id"]
+        action_type = action["action"]
+        
+        if action_type == "scale_up":
+            cluster_spec = {
+                "instances": action["amount"],
+                "cpu_per_instance": 2.0,
+                "memory_per_instance": 4.0,
+                "storage_per_instance": 100.0,
+                "quantum_coherence": 0.8
+            }
+            await self.deploy_quantum_cluster(region_id, cluster_spec)
+        
+        elif action_type == "scale_down":
+            region = self.regions[region_id]
+            instances_to_remove = list(region["instances"].keys())[:action["amount"]]
+            
+            for instance_id in instances_to_remove:
+                await self._terminate_instance(region_id, instance_id)
+        
+        elif action_type == "redistribute":
+            await self._redistribute_regional_load(region_id)
+    
+    async def _terminate_instance(self, region_id: str, instance_id: str):
+        """Terminate a quantum computing instance"""
+        region = self.regions[region_id]
+        
+        if instance_id not in region["instances"]:
+            return
+        
+        # Remove from load balancer
+        self.global_load_balancer.unregister_worker(instance_id)
+        
+        # Release resources
+        instance = region["instances"][instance_id]
+        reservation_id = f"instance_{instance_id}"
+        region["resource_pool"].release_resources(reservation_id)
+        
+        # Remove from region
+        del region["instances"][instance_id]
+        
+        self.logger.info(f"Terminated quantum instance {instance_id} in region {region_id}")
+    
+    async def _redistribute_regional_load(self, region_id: str):
+        """Redistribute load within a region for better coherence"""
+        # Simulate load redistribution by updating worker stats
+        region = self.regions[region_id]
+        
+        for instance_id, instance in region["instances"].items():
+            # Adjust quantum coherence through load redistribution
+            coherence_boost = np.random.uniform(0.05, 0.15)
+            instance["quantum_coherence"] = min(1.0, instance["quantum_coherence"] + coherence_boost)
+            
+            # Update load balancer
+            self.global_load_balancer.update_worker_stats(instance_id, {
+                "quantum_coherence": instance["quantum_coherence"],
+                "load_factor": np.random.uniform(0.3, 0.7)
+            })
+        
+        self.logger.info(f"Redistributed load for region {region_id}")
+    
+    def get_cluster_status(self) -> Dict[str, Any]:
+        """Get comprehensive cluster status"""
+        total_instances = sum(len(region["instances"]) for region in self.regions.values())
+        active_regions = len([r for r in self.regions.values() if r["status"] == "active"])
+        
+        regional_status = {}
+        for region_id, region in self.regions.items():
+            utilization = region["resource_pool"].get_utilization()
+            regional_status[region_id] = {
+                "instances": len(region["instances"]),
+                "status": region["status"],
+                "resource_utilization": utilization,
+                "health": self.cluster_health.get(region_id, 0.0),
+                "entangled_regions": self.quantum_entanglement_links.get(region_id, [])
+            }
+        
+        return {
+            "total_instances": total_instances,
+            "active_regions": active_regions,
+            "regional_status": regional_status,
+            "active_deployments": len([d for d in self.active_deployments.values() if d["status"] in ["queued", "deploying"]]),
+            "entanglement_links": len(self.quantum_entanglement_links),
+            "global_load_distribution": self.global_load_balancer.get_load_distribution()
+        }
+
+
+# Enhanced global instances
+_load_balancer = None
+_auto_scaler = None
+_resource_pool = None
+_cluster_orchestrator = None
+
+
+def get_load_balancer(**kwargs) -> QuantumLoadBalancer:
+    """Get global load balancer instance"""
+    global _load_balancer
+    if _load_balancer is None:
+        _load_balancer = QuantumLoadBalancer(**kwargs)
+    return _load_balancer
+
+
+def get_auto_scaler(**kwargs) -> AutoScaler:
+    """Get global auto-scaler instance"""
+    global _auto_scaler
+    if _auto_scaler is None:
+        _auto_scaler = AutoScaler(**kwargs)
+    return _auto_scaler
+
+
+def get_resource_pool(cpu: float = 100.0, memory: float = 32.0, storage: float = 1000.0) -> ResourcePool:
+    """Get global resource pool instance"""
+    global _resource_pool
+    if _resource_pool is None:
+        _resource_pool = ResourcePool(cpu, memory, storage)
+    return _resource_pool
+
+
+def get_cluster_orchestrator() -> QuantumClusterOrchestrator:
+    """Get global cluster orchestrator instance"""
+    global _cluster_orchestrator
+    if _cluster_orchestrator is None:
+        _cluster_orchestrator = QuantumClusterOrchestrator()
+    return _cluster_orchestrator
+
+
 def shutdown_scaling_systems():
     """Shutdown all scaling systems"""
     global _auto_scaler

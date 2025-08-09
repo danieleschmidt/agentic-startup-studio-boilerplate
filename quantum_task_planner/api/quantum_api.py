@@ -615,6 +615,227 @@ async def health_check():
     }
 
 
+@app.post("/api/v1/tasks/batch", response_model=Dict[str, Any])
+async def create_tasks_batch(requests: List[TaskCreateRequest]):
+    """Create multiple tasks in batch for improved performance"""
+    try:
+        created_tasks = []
+        errors = []
+        
+        for i, request in enumerate(requests):
+            try:
+                # Convert priority string to enum
+                priority_map = {
+                    "critical": TaskPriority.CRITICAL,
+                    "high": TaskPriority.HIGH,
+                    "medium": TaskPriority.MEDIUM,
+                    "low": TaskPriority.LOW,
+                    "minimal": TaskPriority.MINIMAL
+                }
+                
+                priority = priority_map.get(request.priority.lower(), TaskPriority.MEDIUM)
+                
+                # Create estimated duration
+                estimated_duration = None
+                if request.estimated_duration_hours:
+                    estimated_duration = timedelta(hours=request.estimated_duration_hours)
+                
+                # Create quantum task
+                task = QuantumTask(
+                    title=request.title,
+                    description=request.description,
+                    priority=priority,
+                    estimated_duration=estimated_duration,
+                    due_date=request.due_date,
+                    tags=request.tags,
+                    complexity_factor=request.complexity_factor
+                )
+                
+                # Add to scheduler
+                scheduler.add_task(task)
+                created_tasks.append(task.to_dict())
+                
+            except Exception as e:
+                errors.append({"index": i, "error": str(e)})
+        
+        return {
+            "status": "success" if not errors else "partial",
+            "created_tasks": created_tasks,
+            "errors": errors,
+            "total_created": len(created_tasks),
+            "total_errors": len(errors)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/v1/tasks/search", response_model=Dict[str, Any])
+async def search_tasks(
+    q: Optional[str] = None,
+    priority: Optional[str] = None,
+    state: Optional[str] = None,
+    tags: Optional[str] = None,
+    due_after: Optional[datetime] = None,
+    due_before: Optional[datetime] = None,
+    min_coherence: Optional[float] = None,
+    max_coherence: Optional[float] = None,
+    limit: int = 100,
+    offset: int = 0
+):
+    """Advanced task search with filters"""
+    try:
+        tasks = list(scheduler.tasks.values())
+        filtered_tasks = []
+        
+        for task in tasks:
+            # Text search in title and description
+            if q and q.lower() not in (task.title + " " + task.description).lower():
+                continue
+            
+            # Priority filter
+            if priority and task.priority.name.lower() != priority.lower():
+                continue
+            
+            # State filter
+            if state and task.state.name.lower() != state.lower():
+                continue
+            
+            # Tags filter
+            if tags:
+                search_tags = [tag.strip().lower() for tag in tags.split(",")]
+                task_tags_lower = [tag.lower() for tag in task.tags]
+                if not any(tag in task_tags_lower for tag in search_tags):
+                    continue
+            
+            # Due date filters
+            if due_after and task.due_date and task.due_date < due_after:
+                continue
+            if due_before and task.due_date and task.due_date > due_before:
+                continue
+            
+            # Quantum coherence filters
+            if min_coherence and task.quantum_coherence < min_coherence:
+                continue
+            if max_coherence and task.quantum_coherence > max_coherence:
+                continue
+            
+            filtered_tasks.append(task)
+        
+        # Apply pagination
+        total_count = len(filtered_tasks)
+        paginated_tasks = filtered_tasks[offset:offset + limit]
+        
+        return {
+            "status": "success",
+            "tasks": [task.to_dict() for task in paginated_tasks],
+            "pagination": {
+                "total": total_count,
+                "limit": limit,
+                "offset": offset,
+                "has_more": offset + limit < total_count
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/tasks/{task_id}/execute", response_model=Dict[str, Any])
+async def execute_task(task_id: str, background_tasks: BackgroundTasks):
+    """Execute a quantum task with real-time monitoring"""
+    if task_id not in scheduler.tasks:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    task = scheduler.tasks[task_id]
+    
+    async def task_execution():
+        """Background task execution with quantum state updates"""
+        try:
+            # Update task state to running
+            task.start_execution()
+            
+            # Simulate quantum task execution with coherence decay
+            execution_time = task.estimated_duration or timedelta(hours=1)
+            total_seconds = execution_time.total_seconds()
+            
+            for i in range(int(total_seconds / 10)):  # Update every 10 seconds
+                await asyncio.sleep(10)
+                
+                # Apply quantum decoherence during execution
+                decoherence_rate = 0.01 * (i / (total_seconds / 10))  # Gradual decay
+                task.quantum_coherence = max(0.1, task.quantum_coherence - decoherence_rate)
+                
+                # Update completion probability based on progress
+                progress = i / (total_seconds / 10)
+                task._update_completion_probability(progress)
+                
+                if logger:
+                    logger.logger.info(f"Task {task_id} progress: {progress:.2%}")
+            
+            # Complete task
+            task.complete_execution()
+            if logger:
+                logger.logger.info(f"Task {task_id} completed successfully")
+                
+        except Exception as e:
+            task.set_state(TaskState.FAILED)
+            if logger:
+                logger.logger.error(f"Task {task_id} execution failed: {e}")
+    
+    # Start background execution
+    background_tasks.add_task(task_execution)
+    
+    return {
+        "status": "success",
+        "message": f"Task {task_id} execution started",
+        "task": task.to_dict(),
+        "execution_started": datetime.utcnow().isoformat()
+    }
+
+
+@app.post("/api/v1/tasks/{task_id}/pause", response_model=Dict[str, Any])
+async def pause_task(task_id: str):
+    """Pause a running quantum task"""
+    if task_id not in scheduler.tasks:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    task = scheduler.tasks[task_id]
+    
+    if task.state not in [TaskState.RUNNING, TaskState.IN_PROGRESS]:
+        raise HTTPException(status_code=400, detail="Task is not running")
+    
+    task.set_state(TaskState.PAUSED)
+    
+    return {
+        "status": "success",
+        "message": f"Task {task_id} paused",
+        "task": task.to_dict(),
+        "paused_at": datetime.utcnow().isoformat()
+    }
+
+
+@app.post("/api/v1/tasks/{task_id}/resume", response_model=Dict[str, Any])
+async def resume_task(task_id: str):
+    """Resume a paused quantum task"""
+    if task_id not in scheduler.tasks:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    task = scheduler.tasks[task_id]
+    
+    if task.state != TaskState.PAUSED:
+        raise HTTPException(status_code=400, detail="Task is not paused")
+    
+    task.set_state(TaskState.IN_PROGRESS)
+    
+    return {
+        "status": "success",
+        "message": f"Task {task_id} resumed",
+        "task": task.to_dict(),
+        "resumed_at": datetime.utcnow().isoformat()
+    }
+
+
 @app.get("/api/v1/metrics", response_model=Dict[str, Any])
 async def get_system_metrics():
     """Get comprehensive system metrics"""
