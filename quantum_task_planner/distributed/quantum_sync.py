@@ -534,6 +534,112 @@ class DistributedQuantumCoordinator:
         
         return {"success": True, "result": result}
     
+    async def _execute_coherence_sync(self, task_ids: List[str], params: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute distributed coherence synchronization"""
+        target_coherence = params.get("target_coherence", 0.5)
+        sync_method = params.get("method", "consensus")
+        
+        coherence_adjustments = {}
+        
+        for task_id in task_ids:
+            # Get distributed state
+            distributed_state = self.state_tracker.get_distributed_state(task_id)
+            if not distributed_state:
+                continue
+            
+            current_coherence = distributed_state["consensus_coherence"]
+            adjustment = target_coherence - current_coherence
+            
+            # Apply adjustment to local state if present
+            if task_id in self.state_tracker.local_states:
+                local_state = self.state_tracker.local_states[task_id]
+                local_state.quantum_coherence += adjustment * 0.1  # Gradual adjustment
+                local_state.quantum_coherence = max(0.0, min(1.0, local_state.quantum_coherence))
+                coherence_adjustments[task_id] = adjustment
+        
+        return {
+            "target_coherence": target_coherence,
+            "sync_method": sync_method,
+            "adjustments": coherence_adjustments,
+            "tasks_synchronized": len(coherence_adjustments)
+        }
+    
+    async def _execute_distributed_measurement(self, task_ids: List[str], params: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute distributed quantum measurement"""
+        observer_effect = params.get("observer_effect", 0.1)
+        measurement_type = params.get("type", "collapse")
+        
+        measurement_results = {}
+        
+        for task_id in task_ids:
+            distributed_state = self.state_tracker.get_distributed_state(task_id)
+            if not distributed_state:
+                continue
+            
+            # Simulate quantum measurement collapse
+            state_probabilities = distributed_state["state_probabilities"]
+            if state_probabilities:
+                # Choose state based on probabilities
+                states = list(state_probabilities.keys())
+                probabilities = list(state_probabilities.values())
+                
+                # Normalize probabilities
+                total_prob = sum(probabilities)
+                if total_prob > 0:
+                    probabilities = [p / total_prob for p in probabilities]
+                    measured_state = np.random.choice(states, p=probabilities)
+                    
+                    # Apply observer effect to coherence
+                    new_coherence = distributed_state["consensus_coherence"] * (1 - observer_effect)
+                    
+                    measurement_results[task_id] = {
+                        "measured_state": measured_state,
+                        "pre_measurement_coherence": distributed_state["consensus_coherence"],
+                        "post_measurement_coherence": new_coherence,
+                        "observer_effect": observer_effect
+                    }
+                    
+                    # Update local state if present
+                    if task_id in self.state_tracker.local_states:
+                        local_state = self.state_tracker.local_states[task_id]
+                        local_state.quantum_coherence = new_coherence
+                        # Collapse to measured state
+                        local_state.state_probabilities = {measured_state: 1.0}
+        
+        return {
+            "measurement_type": measurement_type,
+            "observer_effect": observer_effect,
+            "measurements": measurement_results,
+            "tasks_measured": len(measurement_results)
+        }
+    
+    async def _rollback_distributed_operation(self, operation_id: str):
+        """Rollback distributed operation on failure"""
+        operation = self.distributed_operations.get(operation_id)
+        if not operation:
+            return
+        
+        self.logger.warning(f"Rolling back distributed operation {operation_id}")
+        
+        # Send rollback messages to participating nodes
+        rollback_message = {
+            "type": "operation_rollback",
+            "operation_id": operation_id,
+            "coordinator": self.node_id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        try:
+            await self._collect_node_responses(
+                operation["participating_nodes"], rollback_message, timeout=5.0
+            )
+        except Exception as e:
+            self.logger.error(f"Error during rollback: {e}")
+        
+        # Clean up local operation
+        if operation_id in self.distributed_operations:
+            del self.distributed_operations[operation_id]
+    
     async def _commit_distributed_operation(self, operation_id: str) -> Dict[str, Any]:
         """Commit distributed operation (Phase 3)"""
         
