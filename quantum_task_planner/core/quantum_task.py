@@ -19,10 +19,13 @@ class TaskState(Enum):
     SUPERPOSITION = "superposition"  # Task exists in multiple states
     PENDING = "pending"
     IN_PROGRESS = "in_progress" 
+    RUNNING = "running"  # Alias for in_progress
     COMPLETED = "completed"
     BLOCKED = "blocked"
     CANCELLED = "cancelled"
     DEFERRED = "deferred"
+    PAUSED = "paused"
+    FAILED = "failed"
 
 
 class TaskPriority(Enum):
@@ -95,6 +98,9 @@ class QuantumTask(BaseModel):
     # Performance metrics
     success_probability: float = Field(default=0.8, ge=0.0, le=1.0)
     complexity_factor: float = Field(default=1.0, ge=0.1, le=10.0)
+    
+    # Current state (for API compatibility)
+    state: TaskState = TaskState.PENDING
     
     class Config:
         arbitrary_types_allowed = True
@@ -266,5 +272,22 @@ class QuantumTask(BaseModel):
             "state_probabilities": {
                 state.value: amp.probability 
                 for state, amp in self.state_amplitudes.items()
-            }
+            },
+            "current_state": self.state.value
         }
+    
+    def start_execution(self):
+        """Start task execution"""
+        self.state = TaskState.IN_PROGRESS
+    
+    def complete_execution(self):
+        """Complete task execution"""
+        self.state = TaskState.COMPLETED
+    
+    def set_state(self, new_state: TaskState):
+        """Set task state"""
+        self.state = new_state
+    
+    def _update_completion_probability(self, progress: float):
+        """Update completion probability based on progress"""
+        self.success_probability = min(1.0, self.success_probability + progress * 0.1)
