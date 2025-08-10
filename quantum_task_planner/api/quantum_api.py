@@ -18,20 +18,19 @@ import uvicorn
 
 from ..core.quantum_task import QuantumTask, TaskState, TaskPriority
 from ..core.quantum_scheduler import QuantumTaskScheduler
-from ..core.quantum_optimizer import QuantumProbabilityOptimizer
-from ..core.entanglement_manager import TaskEntanglementManager, EntanglementType
+from ..core.simple_optimizer import SimpleQuantumOptimizer
+from ..core.simple_entanglement import SimpleEntanglementManager, SimpleEntanglementType
 
-from ..utils.middleware import setup_middleware
-from ..utils.security import SecurityConfig, create_default_security_config
-from ..utils.health_checks import (
+from ..utils.simple_middleware import setup_middleware, create_default_security_config
+from ..utils.simple_health import (
     get_health_manager, setup_default_health_checks,
     SystemResourcesHealthCheck, QuantumCoherenceHealthCheck
 )
-from ..utils.logging import setup_logging, get_logger
-from ..performance.cache import get_cache, cached_quantum
-from ..performance.concurrent import get_worker_pool
-from ..performance.scaling import get_load_balancer, get_auto_scaler
-from ..distributed.quantum_sync import get_quantum_coordinator
+from ..utils.simple_logging import setup_logging, get_logger
+from ..performance.simple_cache import get_cache, cached_quantum
+from ..performance.simple_concurrent import get_worker_pool
+from ..performance.simple_scaling import get_load_balancer, get_auto_scaler
+from ..distributed.simple_sync import get_quantum_coordinator
 
 
 # Pydantic models for API
@@ -74,8 +73,8 @@ class QuantumMeasurementRequest(BaseModel):
 
 # Global instances - Enhanced with distributed capabilities
 scheduler = QuantumTaskScheduler()
-optimizer = QuantumProbabilityOptimizer()
-entanglement_manager = TaskEntanglementManager()
+optimizer = SimpleQuantumOptimizer()
+entanglement_manager = SimpleEntanglementManager()
 
 # Enhanced system components
 logger = None
@@ -417,7 +416,7 @@ async def create_entanglement(request: EntanglementRequest):
     
     # Validate entanglement type
     try:
-        entanglement_type = EntanglementType(request.entanglement_type)
+        entanglement_type = SimpleEntanglementType(request.entanglement_type)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid entanglement type")
     
