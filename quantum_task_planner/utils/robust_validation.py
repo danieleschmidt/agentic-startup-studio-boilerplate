@@ -118,7 +118,7 @@ class PatternRule(ValidationRule):
     def __init__(self, pattern: str, description: str = None, **kwargs):
         self.pattern = re.compile(pattern)
         super().__init__(
-            f"pattern_{hashlib.md5(pattern.encode()).hexdigest()[:8]}",
+            f"pattern_{hashlib.sha256(pattern.encode(), usedforsecurity=False).hexdigest()[:8]}",
             description or f"Must match pattern: {pattern}",
             **kwargs
         )

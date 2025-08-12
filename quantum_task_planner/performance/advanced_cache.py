@@ -8,7 +8,7 @@ import asyncio
 import json
 import time
 import hashlib
-import pickle
+import json as secure_json
 import zlib
 from typing import Any, Dict, List, Optional, Callable, Union, Tuple
 from datetime import datetime, timedelta
@@ -253,7 +253,7 @@ class QuantumAwareCache:
             if compression_type == CompressionType.ZLIB:
                 decompressed = zlib.decompress(data)
                 self.stats.record_decompression()
-                return pickle.loads(decompressed)
+                return secure_json.loads(decompressed.decode('utf-8'))
             
             return data
             
@@ -650,7 +650,7 @@ def quantum_cached(
                     pass
             
             key_str = json.dumps(key_data, sort_keys=True)
-            return hashlib.md5(key_str.encode()).hexdigest()
+            return hashlib.sha256(key_str.encode(), usedforsecurity=False).hexdigest()[:32]
         
         def sync_wrapper(*args, **kwargs):
             key = generate_key(*args, **kwargs)
