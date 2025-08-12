@@ -144,8 +144,8 @@ class QuantumDashboardManager:
             client = self.active_clients[client_id]
             try:
                 await client.websocket.close()
-            except:
-                pass  # Already closed
+            except Exception as e:
+                self.logger.debug(f"WebSocket already closed for client {client_id}: {e}")
             
             del self.active_clients[client_id]
             self.logger.info(f"Dashboard client {client_id} disconnected")

@@ -1,7 +1,7 @@
 {
   "scan_info": {
-    "timestamp": "2025-07-26T21:48:46.325573Z",
-    "files_scanned": 7,
+    "timestamp": "2025-08-12T12:07:29.088502Z",
+    "files_scanned": 123,
     "rules_executed": 4
   },
   "findings": [
@@ -25,12 +25,33 @@
       "severity": "MEDIUM",
       "message": "shell=True in subprocess can lead to command injection",
       "rule": "security-shell-injection"
+    },
+    {
+      "file": ".terragon/autonomous_executor.py",
+      "line": 293,
+      "severity": "MEDIUM",
+      "message": "shell=True in subprocess can lead to command injection",
+      "rule": "security-shell-injection"
+    },
+    {
+      "file": "tests/test_comprehensive_quantum.py",
+      "line": 264,
+      "severity": "HIGH",
+      "message": "Potential hardcoded password",
+      "rule": "security-hardcoded-secrets"
+    },
+    {
+      "file": "quantum_task_planner/ml/quantum_ml_optimizer.py",
+      "line": 789,
+      "severity": "HIGH",
+      "message": "Use of eval() can lead to code injection",
+      "rule": "security-eval-usage"
     }
   ],
   "summary": {
-    "total_findings": 3,
-    "high_severity": 2,
-    "medium_severity": 1,
+    "total_findings": 6,
+    "high_severity": 4,
+    "medium_severity": 2,
     "low_severity": 0
   }
 }

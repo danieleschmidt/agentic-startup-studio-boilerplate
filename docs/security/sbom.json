@@ -1,10 +1,10 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.4",
-  "serialNumber": "urn:uuid:2025-07-26T21:48:46.325878",
+  "serialNumber": "urn:uuid:2025-08-12T12:07:29.089167",
   "version": 1,
   "metadata": {
-    "timestamp": "2025-07-26T21:48:46.325882Z",
+    "timestamp": "2025-08-12T12:07:29.089291Z",
     "component": {
       "type": "application",
       "name": "agentic-startup-studio-boilerplate",

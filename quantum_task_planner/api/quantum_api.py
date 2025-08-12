@@ -952,7 +952,7 @@ class QuantumPlannerAPI:
         self.auto_scaler = auto_scaler
         self.quantum_coordinator = quantum_coordinator
     
-    def run(self, host: str = "0.0.0.0", port: int = 8000, **kwargs):
+    def run(self, host: str = "127.0.0.1", port: int = 8000, **kwargs):
         """Run the production API server"""
         uvicorn.run(
             self.app, 

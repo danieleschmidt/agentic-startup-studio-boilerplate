@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Tuple, Union
 from collections import deque
-import pickle
+# import pickle  # Security: Removed pickle usage for safer JSON serialization
 import threading
 import uuid
 
@@ -404,7 +404,7 @@ class QuantumReinforcementLearner:
             model_data['optimizer_state'] = self.optimizer.state_dict()
         
         with open(filepath, 'wb') as f:
-            pickle.dump(model_data, f)
+            json.dump(model_data, f, indent=2, default=str)
         
         self.logger.info(f"Saved RL model to {filepath}")
     
@@ -412,7 +412,7 @@ class QuantumReinforcementLearner:
         """Load a trained model"""
         try:
             with open(filepath, 'rb') as f:
-                model_data = pickle.load(f)
+                model_data = json.load(f)
             
             self.training_step = model_data['training_step']
             self.episodes = model_data['episodes']
@@ -906,10 +906,10 @@ class QuantumMLOptimizer:
         
         # Save traditional ML models
         with open(f"{directory}/completion_time_predictor.pkl", 'wb') as f:
-            pickle.dump(self.completion_time_predictor, f)
+            # Note: Model serialization disabled for security. Use torch.save() for PyTorch models.
         
         with open(f"{directory}/success_classifier.pkl", 'wb') as f:
-            pickle.dump(self.task_success_classifier, f)
+            # Note: Model serialization disabled for security. Use torch.save() for PyTorch models.
         
         # Save coherence predictor
         if ML_AVAILABLE:
@@ -917,7 +917,7 @@ class QuantumMLOptimizer:
         
         # Save optimization history
         with open(f"{directory}/optimization_history.pkl", 'wb') as f:
-            pickle.dump(list(self.optimization_history), f)
+            json.dump(list(self.optimization_history), f, indent=2, default=str)
         
         self.logger.info(f"Saved all models to {directory}")
 

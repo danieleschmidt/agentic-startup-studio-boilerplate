@@ -468,7 +468,7 @@ class QuantumPerformanceOptimizer:
         # Hash the components for compact key
         import hashlib
         key_string = "|".join(key_components)
-        return hashlib.md5(key_string.encode()).hexdigest()
+        return hashlib.sha256(key_string.encode(), usedforsecurity=False).hexdigest()[:32]
     
     def _start_background_optimization(self):
         """Start background optimization tasks"""
