@@ -9,7 +9,7 @@ import asyncio
 import heapq
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Set, Tuple, Any, Callable
+from typing import Dict, List, Optional, Set, Tuple, Any, Callable, Union
 import numpy as np
 from dataclasses import dataclass
 import logging
@@ -32,8 +32,8 @@ class SchedulingConstraint:
 @dataclass
 class ResourceConstraint(SchedulingConstraint):
     """Resource availability constraint"""
-    resource_type: str
-    available_amount: float
+    resource_type: str = "cpu"
+    available_amount: float = 100.0
     
     def evaluate(self, task: QuantumTask, context: Dict[str, Any]) -> float:
         required = sum(
@@ -52,8 +52,12 @@ class ResourceConstraint(SchedulingConstraint):
 @dataclass
 class TimeConstraint(SchedulingConstraint):
     """Time-based scheduling constraint"""
-    deadline: datetime
+    deadline: Optional[datetime] = None
     criticality: float = 1.0
+    
+    def __post_init__(self):
+        if self.deadline is None:
+            self.deadline = datetime.utcnow() + timedelta(days=7)  # Default 1 week
     
     def evaluate(self, task: QuantumTask, context: Dict[str, Any]) -> float:
         if not task.due_date:

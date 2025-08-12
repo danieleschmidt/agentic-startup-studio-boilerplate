@@ -200,8 +200,15 @@ class QuantumAnnealingOptimizer:
                 interference_strength = 0.1 * task.quantum_coherence
                 for t1 in range(self.n_qubits // len(tasks)):
                     for t2 in range(t1 + 1, self.n_qubits // len(tasks)):
+                        # Get quantum amplitude with proper default
+                        pending_amplitude = task.state_amplitudes.get(TaskState.PENDING)
+                        if pending_amplitude is not None:
+                            phase_angle = np.angle(pending_amplitude.amplitude)
+                        else:
+                            phase_angle = 0.0
+                        
                         interference_term = interference_strength * np.cos(
-                            np.angle(task.state_amplitudes.get(TaskState.PENDING, 0)) * (t1 - t2)
+                            phase_angle * (t1 - t2)
                         )
                         qubo_matrix[base_idx + t1, base_idx + t2] += weight * interference_term
         

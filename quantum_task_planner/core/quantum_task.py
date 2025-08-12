@@ -102,14 +102,15 @@ class QuantumTask(BaseModel):
     # Current state (for API compatibility)
     state: TaskState = TaskState.PENDING
     
-    class Config:
-        arbitrary_types_allowed = True
-        json_encoders = {
+    model_config = {
+        "arbitrary_types_allowed": True,
+        "json_encoders": {
             datetime: lambda v: v.isoformat(),
             timedelta: lambda v: v.total_seconds(),
             complex: lambda v: {"real": v.real, "imag": v.imag},
             np.ndarray: lambda v: v.tolist()
         }
+    }
     
     def __init__(self, **data):
         super().__init__(**data)
@@ -153,6 +154,14 @@ class QuantumTask(BaseModel):
         # Calculate probabilities for measurement
         probabilities = [amp.probability for amp in self.state_amplitudes.values()]
         states = list(self.state_amplitudes.keys())
+        
+        # Normalize probabilities to ensure they sum to 1
+        total_prob = sum(probabilities)
+        if total_prob > 0:
+            probabilities = [p / total_prob for p in probabilities]
+        else:
+            # Fallback to uniform distribution
+            probabilities = [1.0 / len(states) for _ in states]
         
         # Perform quantum measurement
         measured_state = np.random.choice(states, p=probabilities)
