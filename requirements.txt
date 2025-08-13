@@ -119,7 +119,7 @@ gunicorn==21.2.0
 uvicorn[standard]==0.25.0
 
 # CORS Middleware
-python-cors==1.7.0
+python-cors==1.6.0
 
 # Rate Limiting
 slowapi==0.1.9

@@ -18,6 +18,20 @@ class QuantumTaskPlannerError(Exception):
         self.context = context or {}
         self.timestamp = datetime.utcnow()
         super().__init__(self.message)
+
+
+class QuantumSecurityError(QuantumTaskPlannerError):
+    """Security-related quantum errors"""
+    
+    def __init__(self, message: str, error_code: str = "SECURITY_ERROR", context: Dict[str, Any] = None):
+        super().__init__(message, error_code, context)
+
+
+class ValidationError(QuantumTaskPlannerError):
+    """Data validation errors"""
+    
+    def __init__(self, message: str, error_code: str = "VALIDATION_ERROR", context: Dict[str, Any] = None):
+        super().__init__(message, error_code, context)
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert exception to dictionary for serialization"""
