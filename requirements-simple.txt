@@ -1,0 +1,94 @@
+# Simplified Production Dependencies - Python 3.12 Compatible
+
+# Web Framework
+fastapi>=0.108.0
+uvicorn[standard]>=0.25.0
+starlette>=0.32.0
+
+# Scientific Computing
+numpy>=1.26.0
+scipy>=1.11.0
+matplotlib>=3.8.0
+
+# CLI Framework
+click>=8.1.0
+rich>=13.7.0
+
+# Async Support
+aiofiles>=23.2.0
+
+# Database
+sqlalchemy>=2.0.0
+alembic>=1.13.0
+
+# Caching
+redis>=5.0.0
+
+# Authentication & Security
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+
+# HTTP Client
+httpx>=0.26.0
+requests>=2.31.0
+
+# Data Validation & Serialization
+pydantic[email]>=2.5.0
+pydantic-settings>=2.1.0
+
+# Configuration Management
+python-dotenv>=1.0.0
+
+# Date & Time
+python-dateutil>=2.8.0
+pytz>=2023.3
+
+# Logging
+structlog>=23.2.0
+
+# Monitoring & Metrics
+prometheus-client>=0.19.0
+
+# Template Engine
+jinja2>=3.1.0
+
+# Data Processing
+pandas>=2.1.0
+
+# JSON Processing
+orjson>=3.9.0
+
+# YAML Processing
+pyyaml>=6.0.0
+
+# HTTP Server
+gunicorn>=21.2.0
+
+# Rate Limiting
+slowapi
+
+# Encryption
+cryptography>=41.0.0
+bcrypt>=4.1.0
+
+# Health Checks
+healthcheck
+
+# WebSocket Support
+websockets>=12.0
+
+# Task Scheduling
+apscheduler>=3.10.0
+
+# Process Management
+psutil>=5.9.0
+
+# Exception Handling
+sentry-sdk[fastapi]
+
+# Retry Logic
+tenacity>=8.2.0
+
+# Circuit Breaker
+circuitbreaker>=1.4.0
