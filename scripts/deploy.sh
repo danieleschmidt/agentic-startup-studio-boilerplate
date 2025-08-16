@@ -1,14 +1,12 @@
 #!/bin/bash
-# Production Deployment Script for Quantum Task Planner
+# Optimized Production Deployment Script for Quantum Task Planner
 
-set -euo pipefail
+set -e  # Exit on any error
 
 # Configuration
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-DEPLOYMENT_TYPE="${1:-docker-compose}"  # docker-compose, kubernetes, or swarm
-ENVIRONMENT="${2:-production}"
-VERSION="${3:-latest}"
+APP_NAME="quantum-task-planner"
+VERSION="v3.0.0"
+HEALTH_CHECK_TIMEOUT=300
 
 # Colors for output
 RED='\033[0;31m'
@@ -104,23 +102,21 @@ EOF
     log_success "Environment loaded from $env_file"
 }
 
-# Build Docker images
-build_images() {
-    log_info "Building Docker images..."
+# Build Docker image
+build_image() {
+    log_info "Building Docker image..."
     
-    cd "$PROJECT_ROOT"
+    # Build optimized production image
+    docker build -f Dockerfile.optimized -t ${APP_NAME}:${VERSION} .
+    docker tag ${APP_NAME}:${VERSION} ${APP_NAME}:latest
     
-    # Build production image
-    docker build -f Dockerfile.production -t "quantum-task-planner:${VERSION}" . --target production
-    
-    # Build backup image
-    docker build -f Dockerfile.backup -t "quantum-task-planner-backup:${VERSION}" ./scripts
-    
-    # Tag images
-    docker tag "quantum-task-planner:${VERSION}" "quantum-task-planner:latest"
-    docker tag "quantum-task-planner-backup:${VERSION}" "quantum-task-planner-backup:latest"
-    
-    log_success "Docker images built successfully"
+    # Verify image was built successfully
+    if docker images | grep -q "${APP_NAME}.*${VERSION}"; then
+        log_success "Docker image built successfully: ${APP_NAME}:${VERSION}"
+    else
+        log_error "Failed to build Docker image"
+        exit 1
+    fi
 }
 
 # Run tests

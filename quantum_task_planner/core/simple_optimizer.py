@@ -108,3 +108,23 @@ class SimpleQuantumOptimizer:
     def get_optimization_history(self) -> List[Dict[str, Any]]:
         """Get optimization history"""
         return self.optimization_history[-10:]  # Return last 10 optimizations
+    
+    def optimize_task_order(self, tasks: List[QuantumTask]) -> List[QuantumTask]:
+        """Simple task ordering optimization based on priority and completion probability"""
+        
+        # Sort tasks by a combined score of priority and completion probability
+        def task_score(task):
+            priority_weight = task.priority.probability_weight
+            try:
+                completion_prob = task.get_completion_probability()
+            except AttributeError:
+                completion_prob = 0.8  # Default completion probability
+            
+            # Combine priority and completion probability
+            return priority_weight * 0.7 + completion_prob * 0.3
+        
+        # Sort by score in descending order (highest score first)
+        optimized_tasks = sorted(tasks, key=task_score, reverse=True)
+        
+        self.logger.info(f"Optimized order for {len(tasks)} tasks")
+        return optimized_tasks

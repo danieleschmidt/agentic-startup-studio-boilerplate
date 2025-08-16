@@ -13,7 +13,7 @@ from .core.quantum_task import QuantumTask, TaskState
 from .core.quantum_scheduler import QuantumTaskScheduler
 from .core.quantum_optimizer import QuantumProbabilityOptimizer
 from .core.entanglement_manager import TaskEntanglementManager
-from .api.quantum_api import QuantumPlannerAPI
+# from .api.quantum_api import QuantumPlannerAPI  # Disabled for minimal dependencies
 
 __all__ = [
     "QuantumTask",
@@ -21,5 +21,5 @@ __all__ = [
     "QuantumTaskScheduler",
     "QuantumProbabilityOptimizer",
     "TaskEntanglementManager",
-    "QuantumPlannerAPI"
+    # "QuantumPlannerAPI"  # Disabled for minimal dependencies
 ]
