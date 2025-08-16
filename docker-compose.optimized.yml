@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  quantum-planner:
+    build:
+      context: .
+      dockerfile: Dockerfile.optimized
+    container_name: quantum_task_planner
+    ports:
+      - "8000:8000"
+    environment:
+      - QUANTUM_ENV=production
+      - QUANTUM_LOG_LEVEL=INFO
+      - QUANTUM_CACHE_SIZE=10000
+      - QUANTUM_MAX_WORKERS=8
+    volumes:
+      - quantum_data:/app/data
+      - quantum_logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "from quantum_task_planner.core.quantum_task import QuantumTask; print('Health OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - quantum_network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+  redis:
+    image: redis:7-alpine
+    container_name: quantum_redis
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - quantum_network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: quantum_prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    restart: unless-stopped
+    networks:
+      - quantum_network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: quantum_grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=quantum_admin_2024
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    restart: unless-stopped
+    networks:
+      - quantum_network
+
+volumes:
+  quantum_data:
+    driver: local
+  quantum_logs:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  quantum_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
