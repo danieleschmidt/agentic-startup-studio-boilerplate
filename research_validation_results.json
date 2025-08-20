@@ -1,0 +1,43 @@
+{
+  "timestamp": "2025-08-20T13:47:53.062554",
+  "total_tests": 5,
+  "passed_tests": 4,
+  "success_rate": 80.0,
+  "test_results": [
+    {
+      "test": "consciousness_quantum_conversion",
+      "status": "passed",
+      "quantum_vector_norm": 1.0,
+      "non_zero_amplitudes": 6
+    },
+    {
+      "test": "test_consciousness_quantum_optimization",
+      "status": "failed",
+      "error": ""
+    },
+    {
+      "test": "performance_benchmarking",
+      "status": "passed",
+      "cq_time": 0.004189968109130859,
+      "baseline_time": 1.3828277587890625e-05,
+      "speedup_factor": 0.0033003300330033004,
+      "network_coherence": 0.9775500353394986,
+      "num_tasks": 20
+    },
+    {
+      "test": "statistical_significance_framework",
+      "status": "passed",
+      "cq_mean": 0.7704407622146838,
+      "baseline_mean": 0.6276721941256639,
+      "improvement_percentage": 22.745721321603867,
+      "effect_size": 1.8581081601740017
+    },
+    {
+      "test": "reproducibility_framework",
+      "status": "passed",
+      "coherence_diff": 0.0,
+      "quality_diff": 0.0,
+      "reproducibility_score": 1.0
+    }
+  ]
+}
